@@ -1,0 +1,111 @@
+# Development Docker Compose
+# Single-machine development environment
+
+version: '3.8'
+
+services:
+  # API Server (Hono + tRPC)
+  api:
+    build:
+      context: ../..
+      dockerfile: ops/docker/api.Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=mysql://root:kryptonite@mysql:3306/nso_kryptonite
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ../..:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - kryptonite-dev
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=kryptonite
+      - MYSQL_DATABASE=nso_kryptonite
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kryptonite-dev
+
+  # Redis Cache & Sessions
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - kryptonite-dev
+
+  # Elasticsearch for telemetry
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - kryptonite-dev
+
+  # Zeek (network monitoring)
+  zeek:
+    image: zeek/zeek:6.0
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    networks:
+      - kryptonite-dev
+    command: zeek -i eth0 local
+
+  # vLLM (local AI inference)
+  vllm:
+    image: vllm/vllm-openai:latest
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ../../models:/models
+    command: >
+      --model /models/Llama-3-70B-Instruct-Q4_K_M.gguf
+      --tensor-parallel-size 1
+      --max-model-len 4096
+      --quantization gptq
+    ports:
+      - "8000:8000"
+    networks:
+      - kryptonite-dev
+    profiles:
+      - ai
+
+volumes:
+  mysql-data:
+  es-data:
+
+networks:
+  kryptonite-dev:
+    driver: bridge

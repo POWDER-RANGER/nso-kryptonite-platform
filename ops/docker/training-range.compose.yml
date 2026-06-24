@@ -1,0 +1,87 @@
+# Training Range Docker Compose
+# 3-5 bare metal servers, 10-20 student devices
+
+version: '3.8'
+
+services:
+  # API Server (replicated)
+  api:
+    build:
+      context: ../..
+      dockerfile: ops/docker/api.Dockerfile
+      target: production
+    deploy:
+      replicas: 2
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - kryptonite-range
+
+  # Load Balancer
+  lb:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - kryptonite-range
+
+  # MySQL Cluster (primary-replica)
+  mysql-primary:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=nso_kryptonite
+    volumes:
+      - mysql-primary-data:/var/lib/mysql
+    networks:
+      - kryptonite-range
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    networks:
+      - kryptonite-range
+
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - kryptonite-range
+
+  # Network Impairment Controller
+  netem:
+    build:
+      context: ../..
+      dockerfile: ops/docker/netem.Dockerfile
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - kryptonite-range
+
+volumes:
+  mysql-primary-data:
+  redis-data:
+  es-data:
+
+networks:
+  kryptonite-range:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
