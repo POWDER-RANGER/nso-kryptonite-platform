@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "./dist",
+    "noEmit": false,
+    "jsx": "preserve",
+    "lib": ["ES2022"],
+    "paths": {
+      "@contracts/*": ["contracts/*"],
+      "@core/*": ["core/*"],
+      "@modules/*": ["modules/*"],
+      "@engine/*": ["engine/*"],
+      "@db/*": ["db/*"]
+    }
+  },
+  "include": ["api/**/*", "contracts/**/*", "core/**/*", "modules/**/*", "engine/**/*", "db/**/*"],
+  "exclude": ["src/**/*", "node_modules", "dist"]
+}

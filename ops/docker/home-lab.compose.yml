@@ -1,0 +1,66 @@
+# Home Lab Docker Compose
+# Single-device deployment (Raspberry Pi, NUC, Linux laptop)
+
+version: '3.8'
+
+services:
+  # Command Center (PWA static files)
+  command-center:
+    build:
+      context: ../..
+      dockerfile: ops/docker/web.Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - kryptonite-home
+
+  # API Server
+  api:
+    build:
+      context: ../..
+      dockerfile: ops/docker/api.Dockerfile
+      target: production
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=sqlite:///var/lib/nso-kryptonite/db.sqlite
+    volumes:
+      - kryptonite-data:/var/lib/nso-kryptonite
+    networks:
+      - kryptonite-home
+
+  # WireGuard Mesh Gateway
+  mesh-gateway:
+    image: linuxserver/wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - wireguard-config:/config
+    ports:
+      - "51820:51820/udp"
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - kryptonite-home
+
+  # Lightweight DB (SQLite for single-device)
+  litestream:
+    image: litestream/litestream
+    volumes:
+      - kryptonite-data:/data
+      - ./litestream.yml:/etc/litestream.yml
+    command: replicate -config /etc/litestream.yml
+    networks:
+      - kryptonite-home
+
+volumes:
+  kryptonite-data:
+  wireguard-config:
+
+networks:
+  kryptonite-home:
+    driver: bridge

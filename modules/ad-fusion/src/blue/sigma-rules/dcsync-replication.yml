@@ -1,0 +1,26 @@
+title: DCSync Attack Detection
+description: Detects DCSync attempts by monitoring for DS-Replication-Get-Changes-All access
+status: experimental
+author: NSO Kryptonite Platform
+references:
+  - https://attack.mitre.org/techniques/T1003/006/
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4662
+    Properties|contains:
+      - 'Replicating Directory Changes All'
+      - '1131f6ad-9c07-11d1-f79f-00c04fc2dcd2'
+      - '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2'
+  filter_authorized_dcs:
+    SubjectDomainName: 'NT AUTHORITY'
+  condition: selection and not filter_authorized_dcs
+falsepositives:
+  - Legitimate domain controller replication
+level: critical
+tags:
+  - attack.credential_access
+  - attack.t1003.006
+  - detection_twin.enforced

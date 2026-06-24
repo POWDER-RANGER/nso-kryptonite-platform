@@ -1,0 +1,31 @@
+title: Kerberoasting Activity
+description: Detects potential Kerberoasting attempts through suspicious service ticket requests
+status: experimental
+author: NSO Kryptonite Platform
+references:
+  - https://attack.mitre.org/techniques/T1558/003/
+  - https://attack.mitre.org/techniques/T1558/004/
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4769
+    ServiceName|endswith: '$'
+    TicketOptions: '0x40810010'
+    TicketEncryptionType:
+      - '0x17'  # RC4-HMAC
+      - '0x1'   # DES-CBC-CRC
+  filter_computer_accounts:
+    AccountName|endswith: '$'
+  filter_krbtgt:
+    ServiceName: 'krbtgt'
+  condition: selection and not filter_computer_accounts and not filter_krbtgt
+falsepositives:
+  - Legacy applications using RC4
+  - Service accounts with SPNs in normal operations
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1558.003
+  - detection_twin.enforced
