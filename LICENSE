@@ -1,0 +1,43 @@
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+Copyright (C) 2025 POWDER-RANGER
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+ADDITIONAL TERMS FOR NSO KRYPTONITE PLATFORM
+
+This software is designed EXCLUSIVELY for the following authorized uses:
+1. Certified cybersecurity training and education
+2. Authorized cyber range operations
+3. Defensive security research within scoped environments
+4. Purple team exercises with proper authorization tokens
+5. SOC analyst training and certification preparation
+
+USE OF THIS SOFTWARE FOR UNAUTHORIZED OFFENSIVE OPERATIONS IS
+TECHNICALLY PREVENTED BY THE AUTHORIZATION CORE AND CONSTITUTES
+A VIOLATION OF BOTH LICENSE TERMS AND APPLICABLE LAW.
+
+The Authorization Core is a runtime dependency of every function.
+No offensive action can execute without:
+- A valid cryptographic authorization token (Ed25519-signed JWT)
+- Defined scope (IP ranges, time windows, technique classes)
+- Simultaneous defensive logging and detection pathways
+
+By using this software, you agree that all actions are cryptographically
+logged in an immutable audit chain with blockchain anchoring.
+
+For licensing inquiries: See repository issues.
