@@ -188,6 +188,15 @@
     .tc-tr{top:-1px;right:-1px;border-left:none;border-bottom:none}
     .tc-bl{bottom:-1px;left:-1px;border-right:none;border-top:none}
     .tc-br{bottom:-1px;right:-1px;border-left:none;border-top:none}
+    /* CROSS-PROJECT NAV */
+    .xpn{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,23,68,0.2);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:12px;transition:transform 0.3s;box-shadow:0 -4px 30px rgba(0,0,0,0.5)}
+    .xpn a{color:rgba(255,255,255,0.4);text-decoration:none;padding:6px 14px;border-radius:4px;transition:all 0.3s;white-space:nowrap;border:1px solid rgba(255,23,68,0.1)}
+    .xpn a:hover{color:var(--red-glow);border-color:var(--red-glow);background:rgba(255,23,68,0.08);box-shadow:0 0 12px rgba(255,23,68,0.2)}
+    .xpn a.xa{color:var(--red-glow);border-color:var(--red-glow);background:rgba(255,23,68,0.12);font-weight:700;text-shadow:0 0 8px rgba(255,23,68,0.3)}
+    .xpn .xt{color:var(--amber);margin-right:10px;font-size:11px;letter-spacing:3px;text-transform:uppercase}
+    .xpnt{position:fixed;bottom:52px;right:20px;z-index:9999;background:rgba(10,10,15,0.8);border:1px solid rgba(255,23,68,0.2);color:var(--red-glow);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all 0.3s;box-shadow:0 0 15px rgba(255,23,68,0.1)}
+    .xpnt:hover{background:rgba(255,23,68,0.15);box-shadow:0 0 20px rgba(255,23,68,0.3);transform:scale(1.1)}
+    @media(max-width:768px){.xpn{font-size:10px;gap:4px;padding:8px 10px}.xpn a{padding:4px 8px;font-size:10px}.xpn .xt{display:none}.xpnt{bottom:48px;width:32px;height:32px;font-size:12px}}
   </style>
 </head>
 <body>
@@ -402,6 +411,17 @@
     </div>
     <p class="footer-copy">POWDER-RANGER &copy; 2026 // AGPL-3.0</p>
   </footer>
+  <!-- CROSS-PROJECT NAVIGATION -->
+  <div class="xpn" id="xpn">
+  <span class="xt">// ECOSYSTEM</span>
+  <a href="https://powder-ranger.github.io" id="xpn-portfolio">Portfolio</a>
+  <a href="https://powder-ranger.github.io/nso-kryptonite-platform" id="xpn-nso">NSO Kryptonite</a>
+  <a href="https://powder-ranger.github.io/CIVWATCH" id="xpn-civwatch">CIVWATCH</a>
+  <a href="https://powder-ranger.github.io/OBLISK" id="xpn-oblisk">OBLISK</a>
+  <a href="https://powder-ranger.github.io/ai-nexus" id="xpn-ainexus">AI Nexus</a>
+  <a href="https://powder-ranger.github.io/dollar-gravity-framework" id="xpn-dollar">Dollar Gravity</a>
+  </div>
+  <button class="xpnt" id="xpnt" onclick="tgxpn()" title="Toggle nav (Shift+E)">&#9650;</button>
   <script>
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
@@ -426,6 +446,11 @@
     }
     setTimeout(glitch, 1000);
     setInterval(glitch, 15000);
+    // Cross-nav
+    const pn=document.getElementById('xpn'),pt=document.getElementById('xpnt');
+    function tgxpn(){const h=pn.style.transform==='translateY(100%)';pn.style.transform=h?'translateY(0)':'translateY(100%)';pt.innerHTML=h?'&#9650;':'&#9660;';pt.style.bottom=h?'52px':'20px';}
+    document.getElementById('xpn-nso').classList.add('xa');
+    document.addEventListener('keydown',e=>{if(e.shiftKey&&e.key==='E')tgxpn();if(e.shiftKey&&e.key==='T')window.scrollTo({top:0,behavior:'smooth'});});
   </script>
 </body>
 </html>
