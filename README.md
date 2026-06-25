@@ -140,11 +140,13 @@ docker-compose -f docker/sanctuary-mesh.compose.yml up -d
 
 ---
 
-## 📈 GitHub Stats
+## 📊 Platform Stats
 
 <div align="center">
 
-![NSO Stats](https://github-readme-stats.vercel.app/api?username=POWDER-RANGER&repo=nso-kryptonite-platform&show_icons=true&theme=radical&hide_border=true)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/POWDER-RANGER/nso-kryptonite-platform?style=for-the-badge&labelColor=0D1117&color=FF1744)
+![GitHub last commit](https://img.shields.io/github/last-commit/POWDER-RANGER/nso-kryptonite-platform?style=for-the-badge&labelColor=0D1117&color=FF1744)
+![GitHub repo size](https://img.shields.io/github/repo-size/POWDER-RANGER/nso-kryptonite-platform?style=for-the-badge&labelColor=0D1117&color=FF1744)
 
 </div>
 
@@ -185,7 +187,7 @@ docker-compose -f docker/sanctuary-mesh.compose.yml up -d
 
 ## 🤝 Connect
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Curtis_Farrar-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/curtis-farrar-g6b)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Curtis_Farrar-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/curtis-farrar-20aa3525b)
 [![GitHub](https://img.shields.io/badge/GitHub-POWDER--RANGER-181717?style=flat&logo=github)](https://github.com/POWDER-RANGER)
 [![Portfolio](https://img.shields.io/badge/Portfolio-powder--ranger.github.io-FF1744?style=flat&logo=githubpages)](https://powder-ranger.github.io)
 [![ORCID](https://img.shields.io/badge/ORCID-0009--0008--9273--2458-A6CE39?style=flat&logo=orcid)](https://orcid.org/0009-0008-9273-2458)
