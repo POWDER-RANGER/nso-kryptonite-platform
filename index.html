@@ -1,24 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#059669" />
-    <meta name="description" content="NSO Kryptonite Platform — Unified Adversarial Defense Command Center" />
-    
-    <!-- PWA manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    
-    <!-- Apple PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Kryptonite" />
-    
-    <title>NSO Kryptonite Platform</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NSO Kryptonite Platform — Unified Adversarial Defense Command Center. Purple Team cyber range for authorized operations.">
+  <meta name="theme-color" content="#8B0000">
+  <title>NSO KRYPTONITE — Unified Adversarial Defense Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --crimson:#DC143C;--blood:#8B0000;--dark:#0a0a0f;--panel:#111118;
+      --red-glow:#ff1744;--blue-glow:#2979ff;--purple-glow:#7c4dff;
+      --amber:#FF9100;--green:#00E676;--cyan:#00E5FF;--white:#e0e0e0;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Rajdhani',sans-serif;background:var(--dark);color:var(--white);
+      overflow-x:hidden;min-height:100vh;
+    }
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:var(--panel)}
+    ::-webkit-scrollbar-thumb{background:var(--crimson);border-radius:3px}
+    body::after{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(220,20,60,0.015) 2px,rgba(220,20,60,0.015) 4px);
+      animation:scanline 8s linear infinite;
+    }
+    @keyframes scanline{0%{background-position:0 0}100%{background-position:0 100vh}}
+    .nav{
+      position:fixed;top:0;left:0;right:0;z-index:1000;
+      background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(220,20,60,0.3);padding:0 2rem;
+      height:56px;display:flex;align-items:center;justify-content:space-between;
+    }
+    .nav-brand{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.1rem;color:var(--red-glow);letter-spacing:2px;text-decoration:none}
+    .nav-links{display:flex;gap:2rem;list-style:none}
+    .nav-links a{color:var(--white);text-decoration:none;font-size:0.85rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:color 0.3s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--red-glow);transition:width 0.3s}
+    .nav-links a:hover{color:var(--red-glow)}
+    .nav-links a:hover::after{width:100%}
+    .nav-status{display:flex;align-items:center;gap:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:#00E676}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    .hero{
+      min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+      position:relative;overflow:hidden;padding:6rem 2rem 4rem;text-align:center;
+      background:radial-gradient(ellipse at 30% 50%,rgba(139,0,0,0.15) 0%,transparent 60%),
+                 radial-gradient(ellipse at 70% 30%,rgba(124,77,255,0.08) 0%,transparent 50%),
+                 var(--dark);
+    }
+    .hero-grid{
+      position:absolute;inset:0;pointer-events:none;opacity:0.08;
+      background-image:linear-gradient(rgba(220,20,60,0.3) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(220,20,60,0.3) 1px,transparent 1px);
+      background-size:60px 60px;animation:gridMove 20s linear infinite;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(60px,60px)}}
+    .hero-badge{
+      display:inline-flex;align-items:center;gap:0.75rem;
+      border:1px solid rgba(220,20,60,0.4);border-radius:4px;padding:0.5rem 1.25rem;
+      font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--red-glow);
+      background:rgba(220,20,60,0.08);margin-bottom:2rem;letter-spacing:2px;text-transform:uppercase;
+    }
+    .hero h1{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(2.5rem,7vw,6rem);
+      line-height:1;color:var(--red-glow);text-shadow:0 0 40px rgba(255,23,68,0.4),0 0 80px rgba(255,23,68,0.15);
+      letter-spacing:4px;margin-bottom:1.5rem;
+    }
+    .hero h1 span{color:var(--white);text-shadow:0 0 20px rgba(255,255,255,0.1)}
+    .hero-sub{font-size:clamp(1rem,2vw,1.5rem);color:rgba(224,224,224,0.6);max-width:700px;margin:0 auto 2.5rem;font-weight:300;letter-spacing:1px}
+    .hero-stats{display:flex;gap:3rem;margin-bottom:2.5rem;flex-wrap:wrap;justify-content:center}
+    .hero-stat{text-align:center}
+    .hero-stat-num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:2rem;color:var(--red-glow)}
+    .hero-stat-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(224,224,224,0.4);text-transform:uppercase;letter-spacing:2px;margin-top:0.25rem}
+    .hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+    .btn{
+      padding:0.875rem 2rem;font-family:'Orbitron',sans-serif;font-size:0.8rem;font-weight:700;
+      letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:3px;
+      cursor:pointer;transition:all 0.3s;border:none;display:inline-flex;align-items:center;gap:0.5rem;
+    }
+    .btn-crimson{background:var(--crimson);color:#fff;box-shadow:0 0 20px rgba(220,20,60,0.3),inset 0 1px 0 rgba(255,255,255,0.1)}
+    .btn-crimson:hover{background:#ff1744;box-shadow:0 0 30px rgba(255,23,68,0.5);transform:translateY(-2px)}
+    .btn-outline{border:1px solid rgba(220,20,60,0.5);color:var(--red-glow);background:transparent}
+    .btn-outline:hover{border-color:var(--red-glow);background:rgba(220,20,60,0.1);box-shadow:0 0 20px rgba(220,20,60,0.2)}
+    .radar-container{position:absolute;right:5%;top:50%;transform:translateY(-50%);width:280px;height:280px;opacity:0.15;pointer-events:none;display:none}
+    @media(min-width:1200px){.radar-container{display:block}}
+    .radar{border:1px solid rgba(220,20,60,0.3);border-radius:50%;width:100%;height:100%;position:relative}
+    .radar::before,.radar::after{content:'';position:absolute;border:1px solid rgba(220,20,60,0.15);border-radius:50%}
+    .radar::before{inset:25%}.radar::after{inset:50%}
+    .radar-sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 270deg,rgba(220,20,60,0.3));animation:radarSpin 4s linear infinite}
+    @keyframes radarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .section{padding:6rem 2rem;position:relative}
+    .section-alt{background:var(--panel)}
+    .container{max-width:1200px;margin:0 auto}
+    .section-header{text-align:center;margin-bottom:4rem}
+    .section-tag{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--red-glow);text-transform:uppercase;letter-spacing:3px;margin-bottom:1rem}
+    .section-title{font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(1.8rem,4vw,3rem);color:var(--white);margin-bottom:1rem}
+    .section-desc{font-size:1.1rem;color:rgba(224,224,224,0.5);max-width:600px;margin:0 auto}
+    .modes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+    .mode-card{
+      background:rgba(17,17,24,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:6px;
+      padding:2rem;position:relative;overflow:hidden;transition:all 0.4s;cursor:default;
+    }
+    .mode-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;transition:all 0.4s}
+    .mode-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.12)}
+    .mode-weapon::before{background:var(--red-glow)}
+    .mode-shield::before{background:var(--blue-glow)}
+    .mode-sanctuary::before{background:var(--purple-glow)}
+    .mode-spectator::before{background:var(--green)}
+    .mode-icon{font-size:2.5rem;margin-bottom:1rem}
+    .mode-card h3{font-family:'Orbitron',sans-serif;font-size:1.1rem;margin-bottom:0.75rem;letter-spacing:1px}
+    .mode-weapon h3{color:var(--red-glow)}.mode-shield h3{color:var(--blue-glow)}
+    .mode-sanctuary h3{color:var(--purple-glow)}.mode-spectator h3{color:var(--green)}
+    .mode-card p{font-size:0.9rem;color:rgba(224,224,224,0.5);line-height:1.6}
+    .mode-role{font-family:'Share Tech Mono',monospace;font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06)}
+    .mode-weapon .mode-role{color:var(--red-glow)}
+    .mode-shield .mode-role{color:var(--blue-glow)}
+    .mode-sanctuary .mode-role{color:var(--purple-glow)}
+    .mode-spectator .mode-role{color:var(--green)}
+    .laws{display:flex;flex-direction:column;gap:2rem;max-width:900px;margin:0 auto}
+    .law{
+      display:flex;gap:2rem;align-items:flex-start;padding:2rem;
+      background:rgba(17,17,24,0.6);border-left:3px solid var(--crimson);border-radius:0 6px 6px 0;
+      transition:all 0.3s;
+    }
+    .law:hover{background:rgba(17,17,24,0.9);border-left-width:5px}
+    .law-num{
+      font-family:'Orbitron',sans-serif;font-weight:900;font-size:3rem;color:rgba(220,20,60,0.2);
+      line-height:1;flex-shrink:0;
+    }
+    .law h4{font-family:'Orbitron',sans-serif;font-size:1.1rem;color:var(--white);margin-bottom:0.5rem;letter-spacing:1px}
+    .law p{color:rgba(224,224,224,0.5);font-size:0.95rem;line-height:1.7}
+    .domains-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
+    .domain{
+      background:rgba(17,17,24,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:6px;
+      padding:1.75rem;transition:all 0.3s;position:relative;overflow:hidden;
+    }
+    .domain:hover{border-color:rgba(220,20,60,0.3);box-shadow:0 4px 20px rgba(220,20,60,0.1)}
+    .domain-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem}
+    .domain-num{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--red-glow);border:1px solid rgba(220,20,60,0.3);padding:0.2rem 0.5rem;border-radius:3px}
+    .domain h4{font-family:'Orbitron',sans-serif;font-size:0.95rem;color:var(--white);letter-spacing:1px}
+    .domain-skills{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem}
+    .skill-tag{font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:0.3rem 0.6rem;border-radius:3px;text-transform:uppercase;letter-spacing:1px}
+    .skill-red{background:rgba(255,23,68,0.1);color:var(--red-glow);border:1px solid rgba(255,23,68,0.2)}
+    .skill-blue{background:rgba(41,121,255,0.1);color:var(--blue-glow);border:1px solid rgba(41,121,255,0.2)}
+    .domain-target{font-size:0.8rem;color:rgba(224,224,224,0.4);border-top:1px solid rgba(255,255,255,0.06);padding-top:0.75rem}
+    .redlines{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+    .redline{
+      display:flex;align-items:center;gap:1rem;padding:1.25rem;
+      background:rgba(255,23,68,0.05);border:1px solid rgba(255,23,68,0.15);border-radius:6px;
+      font-family:'Share Tech Mono',monospace;font-size:0.8rem;
+    }
+    .redline-icon{color:var(--red-glow);font-size:1.2rem}
+    .redline-text{color:rgba(224,224,224,0.6)}
+    .arch-diagram{
+      background:rgba(17,17,24,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:8px;
+      padding:2.5rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;overflow-x:auto;
+    }
+    .arch-layer{display:flex;align-items:center;justify-content:center;padding:1rem;margin-bottom:0.5rem;border-radius:4px;position:relative}
+    .arch-cmd{background:rgba(124,77,255,0.1);border:1px solid rgba(124,77,255,0.3);color:#b388ff}
+    .arch-api{background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.3);color:#448aff}
+    .arch-mod{background:rgba(255,145,0,0.1);border:1px solid rgba(255,145,0,0.3);color:#ffab40}
+    .arch-ai{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#00e5ff}
+    .arch-inf{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:#00e676}
+    .footer{
+      border-top:1px solid rgba(220,20,60,0.2);padding:3rem 2rem;text-align:center;
+      background:var(--panel);
+    }
+    .footer-brand{font-family:'Orbitron',sans-serif;font-weight:700;color:var(--red-glow);letter-spacing:2px;margin-bottom:1rem}
+    .footer-text{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:rgba(224,224,224,0.3);margin-bottom:1.5rem}
+    .footer-links{display:flex;justify-content:center;gap:2rem;margin-bottom:1.5rem}
+    .footer-links a{color:rgba(224,224,224,0.5);text-decoration:none;font-size:0.8rem;transition:color 0.3s}
+    .footer-links a:hover{color:var(--red-glow)}
+    .footer-copy{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(224,224,224,0.2)}
+    @media(max-width:768px){
+      .nav-links{display:none}
+      .hero-stats{gap:1.5rem}
+      .law{flex-direction:column;gap:1rem}
+      .arch-diagram{padding:1.5rem;font-size:0.6rem}
+    }
+    .fade-in{opacity:0;transform:translateY(30px);transition:opacity 0.8s ease-out,transform 0.8s ease-out}
+    .fade-in.visible{opacity:1;transform:translateY(0)}
+    .tactical-corner{position:absolute;width:20px;height:20px;border:2px solid rgba(220,20,60,0.3)}
+    .tc-tl{top:-1px;left:-1px;border-right:none;border-bottom:none}
+    .tc-tr{top:-1px;right:-1px;border-left:none;border-bottom:none}
+    .tc-bl{bottom:-1px;left:-1px;border-right:none;border-top:none}
+    .tc-br{bottom:-1px;right:-1px;border-left:none;border-top:none}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="#" class="nav-brand">NSO_KRYPTONITE</a>
+    <ul class="nav-links">
+      <li><a href="#modes">Modes</a></li>
+      <li><a href="#laws">Laws</a></li>
+      <li><a href="#domains">Domains</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#redlines">Red Lines</a></li>
+    </ul>
+    <div class="nav-status"><span class="status-dot"></span>PLATFORM ONLINE</div>
+  </nav>
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="radar-container"><div class="radar"><div class="radar-sweep"></div></div></div>
+    <div class="hero-badge">&#9670; Authorized Purple Team Operations</div>
+    <h1>NSO<br><span>KRYPTONITE</span></h1>
+    <p class="hero-sub">Unified Adversarial Defense Command Center — Every attack technique mapped to its detection twin. Built for red teams, blue teams, and the purple space where they converge.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">04</div><div class="hero-stat-label">Operation Modes</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">06</div><div class="hero-stat-label">Training Domains</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">03</div><div class="hero-stat-label">Immutable Laws</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">06</div><div class="hero-stat-label">Red Lines</div></div>
+    </div>
+    <div class="hero-actions">
+      <a href="https://github.com/POWDER-RANGER/nso-kryptonite-platform" class="btn btn-crimson" target="_blank">&#9654; View Repository</a>
+      <a href="#modes" class="btn btn-outline">Explore Platform</a>
+    </div>
+  </section>
+  <section class="section" id="modes">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">// Operational Matrix</div>
+        <h2 class="section-title">Four Modes of Operation</h2>
+        <p class="section-desc">Each mode represents a distinct operational posture. Transition between them based on mission phase and authorization level.</p>
+      </div>
+      <div class="modes-grid">
+        <div class="mode-card mode-weapon fade-in">
+          <div class="tactical-corner tc-tl"></div><div class="tactical-corner tc-tr"></div><div class="tactical-corner tc-bl"></div><div class="tactical-corner tc-br"></div>
+          <div class="mode-icon">&#128481;</div>
+          <h3>WEAPON MODE</h3>
+          <p>Adversary emulation, C2 orchestration, scenario deployment, and tradecraft validation. Every offensive action generates telemetry for defensive analysis.</p>
+          <div class="mode-role">Red Team Operators</div>
+        </div>
+        <div class="mode-card mode-shield fade-in">
+          <div class="tactical-corner tc-tl"></div><div class="tactical-corner tc-tr"></div><div class="tactical-corner tc-bl"></div><div class="tactical-corner tc-br"></div>
+          <div class="mode-icon">&#128737;</div>
+          <h3>SHIELD MODE</h3>
+          <p>Real-time detection engineering, threat hunting, and forensic reconstruction. Blue Team starts blind — clarity is earned through investigative discipline.</p>
+          <div class="mode-role">Blue Team Defenders</div>
+        </div>
+        <div class="mode-card mode-sanctuary fade-in">
+          <div class="tactical-corner tc-tl"></div><div class="tactical-corner tc-tr"></div><div class="tactical-corner tc-bl"></div><div class="tactical-corner tc-br"></div>
+          <div class="mode-icon">&#9775;</div>
+          <h3>SANCTUARY MODE</h3>
+          <p>Debrief and co-evolution engine — where offense and defense converge. Post-operation analysis drives mutual capability improvement.</p>
+          <div class="mode-role">Purple Team Fusion</div>
+        </div>
+        <div class="mode-card mode-spectator fade-in">
+          <div class="tactical-corner tc-tl"></div><div class="tactical-corner tc-tr"></div><div class="tactical-corner tc-bl"></div><div class="tactical-corner tc-br"></div>
+          <div class="mode-icon">&#128065;</div>
+          <h3>SPECTATOR MODE</h3>
+          <p>View-only sanitized telemetry, debrief recordings, and detection rule libraries. Learn from operations without direct participation.</p>
+          <div class="mode-role">Observers &amp; Trainees</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section section-alt" id="laws">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">// Core Doctrine</div>
+        <h2 class="section-title">Three Immutable Laws</h2>
+        <p class="section-desc">Non-negotiable principles that govern every operation within the Kryptonite platform.</p>
+      </div>
+      <div class="laws">
+        <div class="law fade-in">
+          <div class="law-num">01</div>
+          <div>
+            <h4>No Offensive Action Without Defensive Consequence</h4>
+            <p>Every attack generates telemetry. Every technique has a detection twin. The platform enforces this coupling at the architectural level — you cannot deploy an offensive module without its defensive counterpart being active and logging.</p>
+          </div>
+        </div>
+        <div class="law fade-in">
+          <div class="law-num">02</div>
+          <div>
+            <h4>No Ground Truth Without Earned Reconstruction</h4>
+            <p>Blue Team begins every exercise blind. Clarity is not given — it is the reward for investigative discipline. The platform progressively reveals truth proportional to the quality of defensive analysis, training hunters to build cases from noise.</p>
+          </div>
+        </div>
+        <div class="law fade-in">
+          <div class="law-num">03</div>
+          <div>
+            <h4>No Completion Without Failure</h4>
+            <p>Timeout-first design. The first attempt is calibrated to collapse. Recovery is the metric, not prevention. Operators learn more from controlled failure than from artificial success. Every session ends with lessons, not just scores.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="domains">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">// Training Curriculum</div>
+        <h2 class="section-title">Six Combat Domains</h2>
+        <p class="section-desc">Comprehensive skill development across the full spectrum of adversarial operations and defensive countermeasures.</p>
+      </div>
+      <div class="domains-grid">
+        <div class="domain fade-in">
+          <div class="domain-header"><span class="domain-num">M1</span><h4>AD FUSION</h4></div>
+          <div class="domain-skills">
+            <span class="skill-tag skill-red">BloodHound</span><span class="skill-tag skill-red">AS-REP Roast</span><span class="skill-tag skill-red">Kerberoast</span><span class="skill-tag skill-red">DCSync</span>
+            <span class="skill-tag skill-blue">Kerberos Anomaly</span><span class="skill-tag skill-blue">Sigma Rules</span>
+          </div>
+          <div class="domain-target">Target: Detect Kerberos attacks under normal domain noise</div>
+        </div>
+        <div class="domain fade-in">
+          <div class="domain-header"><span class="domain-num">M2</span><h4>WIRELESS ADVANCED</h4></div>
+          <div class="domain-skills">
+            <span class="skill-tag skill-red">SDR Evil Twin</span><span class="skill-tag skill-red">BLE Spoof</span><span class="skill-tag skill-red">KRACK</span>
+            <span class="skill-tag skill-blue">WIDS Alerts</span><span class="skill-tag skill-blue">Spectrum Analysis</span>
+          </div>
+          <div class="domain-target">Target: Distinguish rogue APs under RF interference</div>
+        </div>
+        <div class="domain fade-in">
+          <div class="domain-header"><span class="domain-num">M3</span><h4>PROTOCOL EXPLOITATION</h4></div>
+          <div class="domain-skills">
+            <span class="skill-tag skill-red">LLMNR Poison</span><span class="skill-tag skill-red">VLAN Hop</span><span class="skill-tag skill-red">STP Attack</span>
+            <span class="skill-tag skill-blue">Multicast Anomaly</span><span class="skill-tag skill-blue">CAM Monitoring</span>
+          </div>
+          <div class="domain-target">Target: Catch protocol-layer bypasses in real-time</div>
+        </div>
+        <div class="domain fade-in">
+          <div class="domain-header"><span class="domain-num">M4</span><h4>POST-EXPLOITATION</h4></div>
+          <div class="domain-skills">
+            <span class="skill-tag skill-red">C2 Mesh</span><span class="skill-tag skill-red">Pivoting</span><span class="skill-tag skill-red">Injection</span>
+            <span class="skill-tag skill-blue">EDR Behavioral</span><span class="skill-tag skill-blue">Memory Forensics</span>
+          </div>
+          <div class="domain-target">Target: Scope compromise graph from single alert</div>
+        </div>
+        <div class="domain fade-in">
+          <div class="domain-header"><span class="domain-num">M5</span><h4>BLUE DEFENSE</h4></div>
+          <div class="domain-skills">
+            <span class="skill-tag skill-blue">Honeypots</span><span class="skill-tag skill-blue">NDR</span><span class="skill-tag skill-blue">Hunt Mode</span>
+            <span class="skill-tag skill-blue">Degraded Telemetry</span>
+          </div>
+          <div class="domain-target">Target: Hunt in compromised environment with degraded visibility</div>
+        </div>
+        <div class="domain fade-in">
+          <div class="domain-header"><span class="domain-num">M6</span><h4>SKILL VALIDATION</h4></div>
+          <div class="domain-skills">
+            <span class="skill-tag skill-red">Purple Fusion</span><span class="skill-tag skill-blue">Certification</span>
+            <span class="skill-tag skill-blue">Scoring Engine</span><span class="skill-tag skill-blue">Time Pressure</span>
+          </div>
+          <div class="domain-target">Target: Full purple team capability under operational constraints</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section section-alt" id="architecture">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">// System Blueprint</div>
+        <h2 class="section-title">Platform Architecture</h2>
+        <p class="section-desc">Layered defense-in-depth architecture with zero-trust networking and AI-powered analysis.</p>
+      </div>
+      <div class="arch-diagram fade-in">
+        <div class="arch-layer arch-cmd" style="padding:1.25rem;font-size:0.85rem;font-weight:700">COMMAND CENTER (PWA) — React 19 + TypeScript + WebGL + WebAssembly</div>
+        <div style="text-align:center;color:rgba(224,224,224,0.3);font-size:1.2rem;margin:0.25rem 0">&#9660;</div>
+        <div class="arch-layer arch-api" style="padding:1rem">API GATEWAY — Hono + tRPC 11 + Drizzle | JWT Scope Tokens | Ed25519 | RBAC</div>
+        <div style="text-align:center;color:rgba(224,224,224,0.3);font-size:1.2rem;margin:0.25rem 0">&#9660;</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-bottom:0.25rem">
+          <div class="arch-layer arch-mod" style="padding:0.75rem;font-size:0.6rem;text-align:center">AD<br>FUSION</div>
+          <div class="arch-layer arch-mod" style="padding:0.75rem;font-size:0.6rem;text-align:center">WIRELESS<br>ADVANCED</div>
+          <div class="arch-layer arch-mod" style="padding:0.75rem;font-size:0.6rem;text-align:center">PROTOCOL<br>EXPLOIT</div>
+          <div class="arch-layer arch-mod" style="padding:0.75rem;font-size:0.6rem;text-align:center">POST-<br>EXPLOIT</div>
+          <div class="arch-layer arch-mod" style="padding:0.75rem;font-size:0.6rem;text-align:center">BLUE<br>DEFENSE</div>
+        </div>
+        <div style="text-align:center;color:rgba(224,224,224,0.3);font-size:1.2rem;margin:0.25rem 0">&#9660;</div>
+        <div class="arch-layer arch-ai" style="padding:1rem">OBLISK AI ENGINE — Llama 3 70B (4-bit) | Deterministic Safety Override | MCP Integration</div>
+        <div style="text-align:center;color:rgba(224,224,224,0.3);font-size:1.2rem;margin:0.25rem 0">&#9660;</div>
+        <div class="arch-layer arch-inf" style="padding:1rem">INFRASTRUCTURE — WireGuard Zero-Trust | mTLS | eBPF | Proxmox VE | K3s | ZFS</div>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="redlines">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">// Operational Constraints</div>
+        <h2 class="section-title">The Red Lines</h2>
+        <p class="section-desc">Architecturally enforced boundaries that prevent misuse and ensure ethical operations.</p>
+      </div>
+      <div class="redlines">
+        <div class="redline fade-in"><span class="redline-icon">&#10005;</span><span class="redline-text">No zero-day development — FSM override rejects payloads outside MITRE ATT&amp;CK</span></div>
+        <div class="redline fade-in"><span class="redline-icon">&#10005;</span><span class="redline-text">No third-party infrastructure abuse — Scope enforcement blocks external targeting</span></div>
+        <div class="redline fade-in"><span class="redline-icon">&#10005;</span><span class="redline-text">No real credential theft — Pre-provisioned synthetic victim personas only</span></div>
+        <div class="redline fade-in"><span class="redline-icon">&#10005;</span><span class="redline-text">Reversibility mandate — Hardware kill-switch, ZFS snapshots, auto-restore</span></div>
+        <div class="redline fade-in"><span class="redline-icon">&#10005;</span><span class="redline-text">No deployable intrusion methodology — Watermarked, scoped, non-portable payloads</span></div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="footer-brand">NSO_KRYPTONITE</div>
+    <p class="footer-text">Architectural Memento Mori Momentum — Authorized Operations Only</p>
+    <div class="footer-links">
+      <a href="https://github.com/POWDER-RANGER/nso-kryptonite-platform" target="_blank">GitHub</a>
+      <a href="https://github.com/POWDER-RANGER/nso-kryptonite-platform/blob/main/LICENSE" target="_blank">License</a>
+      <a href="https://github.com/POWDER-RANGER/nso-kryptonite-platform/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a>
+      <a href="https://powder-ranger.github.io">Portfolio</a>
+    </div>
+    <p class="footer-copy">POWDER-RANGER &copy; 2026 // AGPL-3.0</p>
+  </footer>
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    const nav = document.querySelector('.nav');
+    window.addEventListener('scroll', () => { nav.style.boxShadow = window.scrollY > 50 ? '0 4px 30px rgba(0,0,0,0.5)' : 'none'; });
+    const heroTitle = document.querySelector('.hero h1');
+    function glitch() {
+      const original = heroTitle.innerHTML;
+      const glitchChars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
+      let iterations = 0;
+      const interval = setInterval(() => {
+        heroTitle.innerHTML = original.split('').map((char, i) => {
+          if (char === '<') return char;
+          if (i < iterations) return original[i];
+          return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+        }).join('');
+        iterations += 2;
+        if (iterations >= original.length) clearInterval(interval);
+      }, 30);
+    }
+    setTimeout(glitch, 1000);
+    setInterval(glitch, 15000);
+  </script>
+</body>
 </html>
