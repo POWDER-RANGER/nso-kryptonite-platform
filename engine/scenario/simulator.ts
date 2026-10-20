@@ -112,6 +112,11 @@ export function createRangeSession(input: { name: string; scenarioId: string; mo
   };
 }
 
+function matchesAny(text: string, terms: string[]): boolean {
+  const normalized = text.toLowerCase();
+  return terms.some((term) => normalized.includes(term));
+}
+
 export function performRangeAction(session: RangeSession, action: RangeAction, note?: string, now = new Date()): RangeSession {
   if (session.status !== 'ACTIVE') throw new Error('Session is not active');
   const next: RangeSession = {
@@ -150,16 +155,28 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     // Keep the session open for investigation and recovery validation after the last event.
   } else if (action === 'INVESTIGATE') {
     if (!note?.trim()) throw new Error('Investigation requires a written finding');
-    next.notes.push(`BLUE INVESTIGATION: ${note.trim().slice(0, 500)}`);
+    const finding = note.trim().slice(0, 500);
+    if (!matchesAny(finding, ['correlat', 'baseline', 'anomal', 'timestamp', 'identity', 'endpoint', 'resolver', 'inventory', 'event', 'alert', 'client'])) {
+      throw new Error('Finding must cite an observable clue, source, baseline, or correlation.');
+    }
+    next.notes.push(`BLUE INVESTIGATION: ${finding}`);
     if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-triage');
-    if (next.events.some((event) => event.title === 'Recovery evidence available')) award('blue-recover');
+    if (next.events.some((event) => event.title === 'Recovery evidence available') && matchesAny(finding, ['reset', 'recover', 'clean', 'follow-up'])) award('blue-recover');
   } else if (action === 'CONTAIN') {
     if (!note?.trim()) throw new Error('Containment requires a justification');
-    next.notes.push(`BLUE CONTAINMENT DECISION: ${note.trim().slice(0, 500)}`);
+    const rationale = note.trim().slice(0, 500);
+    if (!matchesAny(rationale, ['isolate', 'contain', 'disable', 'quarantine', 'block', 'segment', 'restrict', 'reset'])) {
+      throw new Error('Containment rationale must name a concrete defensive action.');
+    }
+    next.notes.push(`BLUE CONTAINMENT DECISION: ${rationale}`);
     if (next.events.some((event) => event.severity === 'HIGH')) award('blue-contain');
   } else if (action === 'SUBMIT_DETECTION') {
     if (!note?.trim()) throw new Error('Detection submission requires a rule or detection rationale');
-    next.notes.push(`BLUE DETECTION SUBMISSION: ${note.trim().slice(0, 500)}`);
+    const detection = note.trim().slice(0, 500);
+    if (!matchesAny(detection, ['detect', 'condition', 'match', 'event id', 'eventid', 'threshold', 'sigma', 'alert', 'when', 'source'])) {
+      throw new Error('Detection submission must describe a match condition, source, threshold, or detection rule.');
+    }
+    next.notes.push(`BLUE DETECTION SUBMISSION: ${detection}`);
     if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-triage');
   } else if (action === 'FINISH') {
     const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
