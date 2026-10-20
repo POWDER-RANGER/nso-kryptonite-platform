@@ -10,14 +10,11 @@ import {
   createRangeSession,
   listScenarios,
   performRangeAction,
+  rangeSessions,
   type RangeAction,
   type RangeMode,
-  type RangeSession,
 } from '../engine/scenario/simulator';
 
-// In-memory store is intentionally explicit: sessions reset when the API process restarts.
-// Replace with transactional persistence before multi-instance or production deployment.
-const rangeSessions = new Map<string, RangeSession>();
 
 const t = initTRPC.create();
 
