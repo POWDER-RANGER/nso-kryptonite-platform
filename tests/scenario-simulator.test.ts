@@ -17,7 +17,7 @@ describe('safe range simulator', () => {
     const second = performRangeAction(first, 'ADVANCE_SCENARIO');
     expect(first.events[0].detail).toContain('Synthetic');
     expect(first.redScore).toBe(10);
-    expect(second.redScore).toBe(10);
+    expect(second.redScore).toBe(20);
     expect(second.stage).toBe(2);
   });
 
