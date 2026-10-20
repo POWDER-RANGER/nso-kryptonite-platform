@@ -58,7 +58,8 @@
     "@radix-ui/react-toast": "^1.2.0",
     "recharts": "^2.13.0",
     "three": "^0.170.0",
-    "@react-three/fiber": "^8.17.0"
+    "@react-three/fiber": "^8.17.0",
+    "@trpc/react-query": "^11.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
