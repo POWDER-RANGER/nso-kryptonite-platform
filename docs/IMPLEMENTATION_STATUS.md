@@ -10,7 +10,7 @@ The first implementation milestone is a local, synthetic cyber-range for defensi
 - Create a named training or operator-versus-operator session.
 - Advance through pre-authored telemetry events.
 - Record Blue-team investigation findings, detection rationale, and containment decisions.
-- Award objective points and show a Red/Blue scorecard.
+- Award objective points and show a Red/Blue scorecard using a transparent keyword-based evidence/action rubric (not AI judgment).
 - Finish the exercise explicitly after all stages have been revealed; abort an active session.
 - API surfaces: `GET /api/v1/range/scenarios`, `GET /api/v1/range/sessions`, `POST /api/v1/range/sessions`, `GET /api/v1/range/sessions/:id`, `POST /api/v1/range/sessions/:id/actions`, and `POST /api/v1/range/sessions/:id/abort`.
 
