@@ -145,12 +145,14 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
       stage: next.stage + 1,
     });
     next.stage += 1;
-    award('red-progress');
+    next.redScore += 10;
+    objective('red-progress').complete = true;
     if (next.stage === scenario.stages.length) next.status = 'COMPLETED';
   } else if (action === 'INVESTIGATE') {
     if (!note?.trim()) throw new Error('Investigation requires a written finding');
     next.notes.push(`BLUE INVESTIGATION: ${note.trim().slice(0, 500)}`);
     if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-triage');
+    if (next.events.some((event) => event.title === 'Recovery evidence available')) award('blue-recover');
   } else if (action === 'CONTAIN') {
     if (!note?.trim()) throw new Error('Containment requires a justification');
     next.notes.push(`BLUE CONTAINMENT DECISION: ${note.trim().slice(0, 500)}`);
