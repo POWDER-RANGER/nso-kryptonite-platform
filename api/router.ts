@@ -5,6 +5,19 @@
 
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
+import {
+  abortRangeSession,
+  createRangeSession,
+  listScenarios,
+  performRangeAction,
+  type RangeAction,
+  type RangeMode,
+  type RangeSession,
+} from '../engine/scenario/simulator';
+
+// In-memory store is intentionally explicit: sessions reset when the API process restarts.
+// Replace with transactional persistence before multi-instance or production deployment.
+const rangeSessions = new Map<string, RangeSession>();
 
 const t = initTRPC.create();
 
@@ -111,8 +124,70 @@ const meshRouter = router({
     }),
 });
 
+// Safe synthetic cyber range: training and operator-vs-operator scoring.
+// These procedures only generate pre-authored local events; they cannot target networks.
+const rangeRouter = router({
+  scenarios: publicProcedure.query(() => listScenarios()),
+
+  sessions: publicProcedure.query(() =>
+    [...rangeSessions.values()].map((session) => ({
+      id: session.id,
+      name: session.name,
+      scenarioId: session.scenarioId,
+      mode: session.mode,
+      status: session.status,
+      createdAt: session.createdAt,
+      redScore: session.redScore,
+      blueScore: session.blueScore,
+      stage: session.stage,
+      eventCount: session.events.length,
+    }))
+  ),
+
+  get: publicProcedure.input(z.object({ id: z.string().uuid() })).query(({ input }) => {
+    const session = rangeSessions.get(input.id);
+    if (!session) throw new Error('Range session not found');
+    return session;
+  }),
+
+  create: publicProcedure.input(z.object({
+    name: z.string().trim().min(1).max(80),
+    scenarioId: z.string().min(1),
+    mode: z.enum(['TRAINING', 'OPERATOR_VS_OPERATOR']),
+  })).mutation(({ input }) => {
+    const session = createRangeSession({
+      name: input.name,
+      scenarioId: input.scenarioId,
+      mode: input.mode as RangeMode,
+    });
+    rangeSessions.set(session.id, session);
+    return session;
+  }),
+
+  act: publicProcedure.input(z.object({
+    id: z.string().uuid(),
+    action: z.enum(['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION']),
+    note: z.string().max(500).optional(),
+  })).mutation(({ input }) => {
+    const session = rangeSessions.get(input.id);
+    if (!session) throw new Error('Range session not found');
+    const updated = performRangeAction(session, input.action as RangeAction, input.note);
+    rangeSessions.set(updated.id, updated);
+    return updated;
+  }),
+
+  abort: publicProcedure.input(z.object({ id: z.string().uuid() })).mutation(({ input }) => {
+    const session = rangeSessions.get(input.id);
+    if (!session) throw new Error('Range session not found');
+    const updated = abortRangeSession(session);
+    rangeSessions.set(updated.id, updated);
+    return updated;
+  }),
+});
+
 // Main router
 export const appRouter = router({
+  range: rangeRouter,
   exercise: exerciseRouter,
   telemetry: telemetryRouter,
   audit: auditRouter,
