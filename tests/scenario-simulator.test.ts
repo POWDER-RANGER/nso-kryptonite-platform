@@ -30,6 +30,17 @@ describe('safe range simulator', () => {
     expect(session.blueScore).toBe(20);
   });
 
+  it('allows post-scenario recovery validation before finishing', () => {
+    let session = createRangeSession({ name: 'test', scenarioId: 'identity-anomaly', mode: 'TRAINING' });
+    for (let i = 0; i < 4; i += 1) session = performRangeAction(session, 'ADVANCE_SCENARIO');
+    expect(session.status).toBe('ACTIVE');
+    session = performRangeAction(session, 'INVESTIGATE', 'Verified reset event and clean follow-up sign-in.');
+    expect(session.blueScore).toBe(35);
+    session = performRangeAction(session, 'FINISH');
+    expect(session.status).toBe('COMPLETED');
+    expect(() => performRangeAction(session, 'ADVANCE_SCENARIO')).toThrow('not active');
+  });
+
   it('requires justified containment and closes terminal sessions', () => {
     let session = createRangeSession({ name: 'test', scenarioId: 'identity-anomaly', mode: 'TRAINING' });
     session = performRangeAction(session, 'ADVANCE_SCENARIO');
