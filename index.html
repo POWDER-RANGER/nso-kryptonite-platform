@@ -197,14 +197,26 @@
     .xpnt{position:fixed;bottom:52px;right:20px;z-index:9999;background:rgba(10,10,15,0.8);border:1px solid rgba(255,23,68,0.2);color:var(--red-glow);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;cursor:pointer;transition:all 0.3s;box-shadow:0 0 15px rgba(255,23,68,0.1)}
     .xpnt:hover{background:rgba(255,23,68,0.15);box-shadow:0 0 20px rgba(255,23,68,0.3);transform:scale(1.1)}
     @media(max-width:768px){.xpn{font-size:10px;gap:4px;padding:8px 10px}.xpn a{padding:4px 8px;font-size:10px}.xpn .xt{display:none}.xpnt{bottom:48px;width:32px;height:32px;font-size:12px}}
-  </style>
+  
+    .nav-toggle{display:none;padding:.55rem .7rem;background:transparent;color:var(--white,#e0e0e0);border:1px solid var(--red-glow);font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+    .nav-toggle:focus-visible,.nav-links a:focus-visible{outline:2px solid var(--red-glow);outline-offset:3px}
+    @media(max-width:900px){
+      nav.nav{height:auto;min-height:56px;flex-wrap:wrap;gap:.65rem;padding:.55rem 1rem;position:fixed;overflow:visible}
+      .nav-toggle{display:inline-flex;align-items:center}
+      .nav-links{display:none;position:absolute;top:100%;left:0;right:0;padding:1rem;background:var(--dark);border-bottom:2px solid var(--red-glow);flex-direction:column;align-items:flex-start;gap:1rem;z-index:1001}
+      .nav-links.is-open{display:flex}
+      .nav-status{font-size:.65rem}
+      .nav-cta{padding:.5rem .7rem;font-size:.7rem}
+    }
+</style>
 
 <link rel="stylesheet" href="https://powder-ranger.github.io/assets/brand-pages.css">
 </head>
 <body>
   <nav class="nav">
     <a href="#" class="nav-brand">NSO_KRYPTONITE</a>
-    <ul class="nav-links">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation">MENU</button>
+    <ul class="nav-links" id="primary-navigation">
       <li><a href="#modes">Modes</a></li>
       <li><a href="#laws">Laws</a></li>
       <li><a href="#domains">Domains</a></li>
@@ -456,5 +468,31 @@
   </script>
 
 <script defer src="https://powder-ranger.github.io/assets/brand-pages.js" data-repo="nso-kryptonite-platform"></script>
+<script>
+(function(){
+  var toggle=document.querySelector(".nav-toggle");
+  var menu=document.querySelector("#primary-navigation");
+  if(!toggle||!menu)return;
+  toggle.addEventListener("click",function(){
+    var expanded=toggle.getAttribute("aria-expanded")==="true";
+    toggle.setAttribute("aria-expanded",String(!expanded));
+    toggle.textContent=expanded?"MENU":"CLOSE";
+    menu.classList.toggle("is-open",!expanded);
+  });
+  menu.addEventListener("click",function(event){
+    if(!event.target.closest("a")||window.matchMedia("(min-width:901px)").matches)return;
+    toggle.setAttribute("aria-expanded","false");
+    toggle.textContent="MENU";
+    menu.classList.remove("is-open");
+  });
+  window.addEventListener("resize",function(){
+    if(window.matchMedia("(min-width:901px)").matches){
+      toggle.setAttribute("aria-expanded","false");
+      toggle.textContent="MENU";
+      menu.classList.remove("is-open");
+    }
+  });
+})();
+</script>
 </body>
 </html>
