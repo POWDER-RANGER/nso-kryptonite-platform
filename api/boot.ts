@@ -84,7 +84,7 @@ app.post('/api/v1/range/sessions/:id/actions', async (c) => {
   if (!session) return c.json({ error: 'Range session not found' }, 404);
   try {
     const body = await c.req.json() as { action?: unknown; note?: unknown };
-    const allowed = ['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION'];
+    const allowed = ['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION', 'FINISH'];
     if (typeof body.action !== 'string' || !allowed.includes(body.action)) {
       return c.json({ error: 'Unsupported range action.' }, 400);
     }
