@@ -7,7 +7,7 @@
 
 export type RangeMode = 'TRAINING' | 'OPERATOR_VS_OPERATOR';
 export type RangeTeam = 'RED' | 'BLUE';
-export type RangeAction = 'ADVANCE_SCENARIO' | 'INVESTIGATE' | 'CONTAIN' | 'SUBMIT_DETECTION';
+export type RangeAction = 'ADVANCE_SCENARIO' | 'INVESTIGATE' | 'CONTAIN' | 'SUBMIT_DETECTION' | 'FINISH';
 
 export interface RangeEvent {
   id: string;
@@ -147,7 +147,7 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     next.stage += 1;
     next.redScore += 10;
     objective('red-progress').complete = true;
-    if (next.stage === scenario.stages.length) next.status = 'COMPLETED';
+    // Keep the session open for investigation and recovery validation after the last event.
   } else if (action === 'INVESTIGATE') {
     if (!note?.trim()) throw new Error('Investigation requires a written finding');
     next.notes.push(`BLUE INVESTIGATION: ${note.trim().slice(0, 500)}`);
@@ -161,6 +161,11 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     if (!note?.trim()) throw new Error('Detection submission requires a rule or detection rationale');
     next.notes.push(`BLUE DETECTION SUBMISSION: ${note.trim().slice(0, 500)}`);
     if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-triage');
+  } else if (action === 'FINISH') {
+    const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
+    if (next.stage < scenario.stages.length) throw new Error('Reveal all scenario stages before finishing');
+    next.status = 'COMPLETED';
+    next.notes.push('Session completed by the operator. Review the scorecard and evidence during debrief.');
   }
   return next;
 }
