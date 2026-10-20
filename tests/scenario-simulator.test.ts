@@ -11,7 +11,7 @@ describe('safe range simulator', () => {
     expect(() => createRangeSession({ name: 'test', scenarioId: 'unknown', mode: 'TRAINING' })).toThrow('Unknown scenario');
   });
 
-  it('emits a synthetic event and awards the red objective once', () => {
+  it('emits synthetic events and scores each Red stage', () => {
     const session = createRangeSession({ name: 'test', scenarioId: 'identity-anomaly', mode: 'OPERATOR_VS_OPERATOR' });
     const first = performRangeAction(session, 'ADVANCE_SCENARIO');
     const second = performRangeAction(first, 'ADVANCE_SCENARIO');
@@ -26,6 +26,7 @@ describe('safe range simulator', () => {
     session = performRangeAction(session, 'ADVANCE_SCENARIO');
     session = performRangeAction(session, 'ADVANCE_SCENARIO');
     expect(() => performRangeAction(session, 'INVESTIGATE')).toThrow('written finding');
+    expect(() => performRangeAction(session, 'INVESTIGATE', 'Looks fine.')).toThrow('observable clue');
     session = performRangeAction(session, 'INVESTIGATE', 'Correlated identity events with the endpoint alert.');
     expect(session.blueScore).toBe(20);
   });
@@ -46,6 +47,7 @@ describe('safe range simulator', () => {
     session = performRangeAction(session, 'ADVANCE_SCENARIO');
     session = performRangeAction(session, 'ADVANCE_SCENARIO');
     session = performRangeAction(session, 'ADVANCE_SCENARIO');
+    expect(() => performRangeAction(session, 'CONTAIN', 'I will look into this.')).toThrow('concrete defensive action');
     session = performRangeAction(session, 'CONTAIN', 'Isolate the synthetic training host pending validation.');
     expect(session.blueScore).toBe(15);
     session = abortRangeSession(session);
