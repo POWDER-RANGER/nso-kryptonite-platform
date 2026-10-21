@@ -15,6 +15,7 @@ import { appRouter } from './router';
 import {
   abortRangeSession,
   createRangeSession,
+  getScenarioFixtures,
   listScenarios,
   performRangeAction,
   type RangeAction,
@@ -46,6 +47,14 @@ app.use(
 
 // Static scenario descriptions are public. Session operations require the appropriate role token in production.
 app.get('/api/v1/range/scenarios', (c) => c.json({ data: listScenarios() }));
+
+app.get('/api/v1/range/scenarios/:id/fixtures', (c) => {
+  try {
+    return c.json({ data: getScenarioFixtures(c.req.param('id')) });
+  } catch {
+    return c.json({ error: 'Unknown synthetic scenario.' }, 404);
+  }
+});
 app.get('/api/v1/range/status', (c) => c.json({ data: { storageMode: getRangeStorageMode(), sessionApi: 'role-protected-on-production' } }));
 
 app.get('/api/v1/range/sessions', async (c) => {
