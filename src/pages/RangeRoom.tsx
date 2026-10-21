@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Activity, Play, Users, ShieldCheck } from 'lucide-react';
+import { rangeAuthHeaders } from '@/lib/range-api';
 
 interface Scenario { id: string; name: string; description: string; stageCount: number; source: string }
 interface Session { id: string; name: string; scenarioId: string; mode: 'TRAINING' | 'OPERATOR_VS_OPERATOR'; status: string; stage: number; currentTurn: 'RED'|'BLUE'|null; redScore: number; blueScore: number; events: Array<{id:string;timestamp:string;source:string;severity:string;title:string;detail:string;clue:string;stage:number}>; objectives: Array<{id:string;label:string;team:string;points:number;complete:boolean}>; notes: string[] }
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...init?.headers } });
+  const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...rangeAuthHeaders(), ...init?.headers } });
   const body = await response.json();
   if (!response.ok) throw new Error(body.error || 'Request failed');
   return body.data as T;
