@@ -48,7 +48,7 @@ const productionGate = { error: 'Range sessions are disabled in production until
 app.get('/api/v1/range/scenarios', (c) => c.json({ data: listScenarios() }));
 
 app.get('/api/v1/range/sessions', async (c) => {
-  if (process.env.NODE_ENV === 'production') return c.json(productionGate, 503);
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
   const sessions = await listRangeSessions();
   return c.json({ data: sessions.map((session) => ({
     id: session.id, name: session.name, scenarioId: session.scenarioId,
@@ -59,14 +59,14 @@ app.get('/api/v1/range/sessions', async (c) => {
 });
 
 app.get('/api/v1/range/sessions/:id', async (c) => {
-  if (process.env.NODE_ENV === 'production') return c.json(productionGate, 503);
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
   const session = await getRangeSession(c.req.param('id'));
   if (!session) return c.json({ error: 'Range session not found' }, 404);
   return c.json({ data: session });
 });
 
 app.post('/api/v1/range/sessions', async (c) => {
-  if (process.env.NODE_ENV === 'production') return c.json(productionGate, 503);
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
   try {
     const body = await c.req.json() as { name?: unknown; scenarioId?: unknown; mode?: unknown };
     if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 80) {
@@ -92,7 +92,7 @@ app.post('/api/v1/range/sessions', async (c) => {
 });
 
 app.post('/api/v1/range/sessions/:id/actions', async (c) => {
-  if (process.env.NODE_ENV === 'production') return c.json(productionGate, 503);
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
   const session = await getRangeSession(c.req.param('id'));
   if (!session) return c.json({ error: 'Range session not found' }, 404);
   try {
@@ -113,7 +113,7 @@ app.post('/api/v1/range/sessions/:id/actions', async (c) => {
 });
 
 app.post('/api/v1/range/sessions/:id/abort', async (c) => {
-  if (process.env.NODE_ENV === 'production') return c.json(productionGate, 503);
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
   const session = await getRangeSession(c.req.param('id'));
   if (!session) return c.json({ error: 'Range session not found' }, 404);
   try {
