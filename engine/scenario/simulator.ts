@@ -120,6 +120,7 @@ function matchesAny(text: string, terms: string[]): boolean {
 
 export function performRangeAction(session: RangeSession, action: RangeAction, note?: string, now = new Date()): RangeSession {
   if (session.status !== 'ACTIVE') throw new Error('Session is not active');
+  if (session.notes.length >= 100) throw new Error('Session note limit reached.');
   const next: RangeSession = {
     ...session,
     events: [...session.events],
