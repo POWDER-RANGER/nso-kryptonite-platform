@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { appRouter } from '../api/router';
 
 const originalNodeEnv = process.env.NODE_ENV;
