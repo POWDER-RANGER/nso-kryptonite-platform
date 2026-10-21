@@ -63,7 +63,11 @@ export function RangeRoom() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   async function refresh() { try { setSession(await request<Session>('/api/v1/range/sessions/'+id)); } catch(e) { setError(e instanceof Error?e.message:'Unable to load session'); } }
-  useEffect(()=>{ void refresh(); },[id]);
+  useEffect(()=>{
+    void refresh();
+    window.addEventListener('range-access-changed', refresh);
+    return () => window.removeEventListener('range-access-changed', refresh);
+  },[id]);
   async function act(action:string) {
     setBusy(true); setError('');
     try {
