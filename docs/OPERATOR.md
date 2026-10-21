@@ -44,12 +44,26 @@ The MySQL code path is present but still needs live-database verification.
    - **Identity Anomaly**: synthetic Windows-style authentication and endpoint events.
    - **Wireless Baseline Drift**: synthetic inventory mismatch and client observations; no RF transmission or scanning.
    - **Protocol Anomaly Triage**: synthetic DNS and network observations.
-3. Choose **Training** for individual practice or **Operator vs Operator** for a shared, turn-based Red/Blue scorecard.
+3. Choose **Detection Testing** to validate a simple rule against the complete synthetic fixture set, **Training** for defensive investigation practice, or **Operator vs Operator** for a shared, turn-based Red/Blue scorecard.
 4. Apply the facilitator key on a deployed service, then select **Start exercise**.
 
 In Operator-vs-Operator mode, Red starts. Red advances one stage, then control passes to Blue. Blue can submit multiple responses during its turn. **End Blue turn** returns control to Red. The API rejects actions from the wrong role. The app currently has one shared session view; Red/Blue view separation and real multi-user room membership are future work.
 
-## 4. Investigate and score
+## 4. Test a detection rule
+
+Choose **Detection Testing** when creating a new session. This mode presents four synthetic fixture events for the selected scenario and evaluates a rule against the scenario's internal ground-truth labels. Ground-truth labels are not included in the displayed corpus.
+
+The supported starter syntax is a semicolon-separated set of filters:
+
+```text
+source=WINDOWS,EDR;severity=MEDIUM,HIGH
+```
+
+Supported fields are `source` (WINDOWS, DNS, EDR, NETWORK), `severity` (INFO, LOW, MEDIUM, HIGH), and `contains` (text from the fixture title, description, or source). Multiple comma-separated values within a field are alternatives; fields combine as AND conditions. This is a small purpose-built rule evaluator, **not** a Sigma, YARA, or KQL parser. It does not ingest real security telemetry.
+
+The result reports matched stage numbers, true positives (TP), false positives (FP), false negatives (FN), precision, recall, and pass/fail. To pass, the rule must match all labeled positive stages and no labeled negative stages. One successful test is required before a testing session can be completed. The rule parser and scoring are educational tools, not proof that a production detection works.
+
+## 5. Investigate and score
 
 - **Advance scenario** reveals the next pre-authored synthetic event and awards Red 10 points per stage.
 - **Submit investigation** records a written finding. The initial scoring rubric checks for evidence-related keywords; it does not evaluate an analyst with AI or expert judgment.
@@ -57,17 +71,17 @@ In Operator-vs-Operator mode, Red starts. Red advances one stage, then control p
 - **Record containment** records a defensive action such as isolation, quarantine, blocking, segmentation, or reset.
 - **Recovery validation** can score after the final scenario event when the written finding mentions recovery evidence.
 
-The scoring rubric is intentionally simple. It is not a security certification, an expert grading process, or a measure of production readiness. Repeated submissions do not repeatedly award an already-completed objective.
+The training/competition scoring rubric is intentionally simple and keyword-based. Detection Testing uses its own filter-based matcher and confusion metrics. Neither is a security certification, an expert grading process, or a measure of production readiness. Repeated submissions do not repeatedly award an already-completed objective.
 
-## 5. Finish and debrief
+## 6. Finish and debrief
 
 After all stages are revealed, the facilitator selects **Finish exercise and lock scorecard**. In competition mode, all Blue turns must be handed back to Red before finishing. The final report displays Red/Blue scores and a score-based winner. A facilitator can abort an active session. Open **Debrief Room** to review the selected session's objective states, recorded event timeline, notes, and scores. Use **Export JSON** to download a copy of the selected session report; this browser download has not yet been end-to-end tested.
 
-## 6. Supported diagnostic commands
+## 7. Supported diagnostic commands
 
 The command line currently supports `help`, `status`, `healthcheck`, `scenarios`, `sessions`, `scope`, `mesh`, and `clear`. These are read-only diagnostics and local range operations. No command deploys a payload or changes a real network.
 
-## 7. Boundaries and verification
+## 8. Boundaries and verification
 
 - Every included scenario uses synthetic local events; no real scan, exploit, credential collection, radio transmission, or external target action is performed.
 - Production-like session REST routes require role credentials; missing configuration fails closed. tRPC session procedures remain disabled on production-like hosts.
