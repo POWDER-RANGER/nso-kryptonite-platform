@@ -193,7 +193,7 @@ export const meshNodes = mysqlTable('mesh_nodes', {
 // This table contains synthetic range evidence only, not real sensor payloads.
 export const rangeSessions = mysqlTable('range_sessions', {
   sessionId: varchar('session_id', { length: 36 }).primaryKey(),
-  mode: mysqlEnum('mode', ['TRAINING', 'OPERATOR_VS_OPERATOR']).notNull(),
+  mode: mysqlEnum('mode', ['TESTING', 'TRAINING', 'OPERATOR_VS_OPERATOR']).notNull(),
   status: mysqlEnum('status', ['ACTIVE', 'COMPLETED', 'ABORTED']).notNull(),
   scenarioId: varchar('scenario_id', { length: 64 }).notNull(),
   sessionData: json('session_data').$type<RangeSession>().notNull(),
