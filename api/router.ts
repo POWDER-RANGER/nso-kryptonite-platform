@@ -123,11 +123,21 @@ const meshRouter = router({
 
 // Safe synthetic cyber range: training and operator-vs-operator scoring.
 // These procedures only generate pre-authored local events; they cannot target networks.
+const rangeProcedure = publicProcedure.use(({ next }) => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Range sessions are disabled in production until operator authorization is enforced.',
+    });
+  }
+  return next();
+});
+
 const rangeRouter = router({
   scenarios: publicProcedure.query(() => listScenarios()),
 
-  sessions: publicProcedure.query(() =>
-    [...rangeSessions.values()].map((session) => ({
+  sessions: rangeProcedure.query(() =>
+    (await listRangeSessions()).map((session) => ({
       id: session.id,
       name: session.name,
       scenarioId: session.scenarioId,
