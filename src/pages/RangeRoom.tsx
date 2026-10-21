@@ -4,6 +4,7 @@ import { Activity, Play, Users, ShieldCheck } from 'lucide-react';
 import { rangeAuthHeaders } from '@/lib/range-api';
 
 interface Scenario { id: string; name: string; description: string; stageCount: number; source: string }
+interface RangeStatus { storageMode: 'memory' | 'mysql'; sessionApi: string }
 interface Session { id: string; name: string; scenarioId: string; mode: 'TRAINING' | 'OPERATOR_VS_OPERATOR'; status: string; stage: number; currentTurn: 'RED'|'BLUE'|null; redScore: number; blueScore: number; events: Array<{id:string;timestamp:string;source:string;severity:string;title:string;detail:string;clue:string;stage:number}>; objectives: Array<{id:string;label:string;team:string;points:number;complete:boolean}>; notes: string[] }
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json', ...rangeAuthHeaders(), ...init?.headers } });
@@ -15,13 +16,17 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 export function ExerciseSetup() {
   const navigate = useNavigate();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [rangeStatus, setRangeStatus] = useState<RangeStatus | null>(null);
   const [name, setName] = useState('Training Exercise');
   const [scenarioId, setScenarioId] = useState('identity-anomaly');
   const [mode, setMode] = useState<'TRAINING' | 'OPERATOR_VS_OPERATOR'>('TRAINING');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { request<Scenario[]>('/api/v1/range/scenarios').then(setScenarios).catch((e) => setError(e.message)); }, []);
+  useEffect(() => {
+    request<Scenario[]>('/api/v1/range/scenarios').then(setScenarios).catch((e) => setError(e.message));
+    request<RangeStatus>('/api/v1/range/status').then(setRangeStatus).catch(() => setRangeStatus(null));
+  }, []);
 
   async function createSession() {
     setBusy(true); setError('');
