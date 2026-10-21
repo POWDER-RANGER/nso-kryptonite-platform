@@ -120,7 +120,9 @@ function matchesAny(text: string, terms: string[]): boolean {
 
 export function performRangeAction(session: RangeSession, action: RangeAction, note?: string, now = new Date()): RangeSession {
   if (session.status !== 'ACTIVE') throw new Error('Session is not active');
-  if (session.notes.length >= 100) throw new Error('Session note limit reached.');
+  if (session.notes.length >= 100 && ['INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION'].includes(action)) {
+    throw new Error('Session note limit reached; finish the exercise or abort it.');
+  }
   const next: RangeSession = {
     ...session,
     events: [...session.events],
@@ -198,13 +200,13 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
       throw new Error('End turn is only available during an operator-vs-operator Blue turn.');
     }
     next.currentTurn = 'RED';
-    next.notes.push('Blue turn ended. Red may advance the next scenario stage.');
+    if (next.notes.length < 100) next.notes.push('Blue turn ended. Red may advance the next scenario stage.');
   } else if (action === 'FINISH') {
     const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
     if (next.stage < scenario.stages.length) throw new Error('Reveal all scenario stages before finishing');
     if (next.mode === 'OPERATOR_VS_OPERATOR' && next.currentTurn === 'BLUE') throw new Error('Blue must end the current turn before finishing');
     next.status = 'COMPLETED';
-    next.notes.push('Session completed by the operator. Review the scorecard and evidence during debrief.');
+    if (next.notes.length < 100) next.notes.push('Session completed by the operator. Review the scorecard and evidence during debrief.');
   }
   return next;
 }
