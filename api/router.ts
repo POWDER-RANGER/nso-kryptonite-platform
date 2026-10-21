@@ -3,17 +3,17 @@
  * All API routes defined here
  */
 
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
   abortRangeSession,
   createRangeSession,
   listScenarios,
   performRangeAction,
-  rangeSessions,
   type RangeAction,
   type RangeMode,
 } from '../engine/scenario/simulator';
+import { getRangeSession, listRangeSessions, saveRangeSession } from './queries/range-store';
 
 
 const t = initTRPC.create();
@@ -141,43 +141,42 @@ const rangeRouter = router({
     }))
   ),
 
-  get: publicProcedure.input(z.object({ id: z.string().uuid() })).query(({ input }) => {
-    const session = rangeSessions.get(input.id);
+  get: rangeProcedure.input(z.object({ id: z.string().uuid() })).query(async ({ input }) => {
+    const session = await getRangeSession(input.id);
     if (!session) throw new Error('Range session not found');
     return session;
   }),
 
-  create: publicProcedure.input(z.object({
+  create: rangeProcedure.input(z.object({
     name: z.string().trim().min(1).max(80),
     scenarioId: z.string().min(1),
     mode: z.enum(['TRAINING', 'OPERATOR_VS_OPERATOR']),
-  })).mutation(({ input }) => {
-    const session = createRangeSession({
-      name: input.name,
-      scenarioId: input.scenarioId,
-      mode: input.mode as RangeMode,
-    });
-    rangeSessions.set(session.id, session);
+  })).mutation(async ({ input }) => {
+    if ((await listRangeSessions()).length >= 100) {
+      throw new TRPCError({ code: 'TOO_MANY_REQUESTS', message: 'The range session limit has been reached.' });
+    }
+    const session = createRangeSession({ name: input.name, scenarioId: input.scenarioId, mode: input.mode as RangeMode });
+    await saveRangeSession(session);
     return session;
   }),
 
-  act: publicProcedure.input(z.object({
+  act: rangeProcedure.input(z.object({
     id: z.string().uuid(),
     action: z.enum(['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION', 'FINISH']),
     note: z.string().max(500).optional(),
-  })).mutation(({ input }) => {
-    const session = rangeSessions.get(input.id);
+  })).mutation(async ({ input }) => {
+    const session = await getRangeSession(input.id);
     if (!session) throw new Error('Range session not found');
     const updated = performRangeAction(session, input.action as RangeAction, input.note);
-    rangeSessions.set(updated.id, updated);
+    await saveRangeSession(updated);
     return updated;
   }),
 
-  abort: publicProcedure.input(z.object({ id: z.string().uuid() })).mutation(({ input }) => {
-    const session = rangeSessions.get(input.id);
+  abort: rangeProcedure.input(z.object({ id: z.string().uuid() })).mutation(async ({ input }) => {
+    const session = await getRangeSession(input.id);
     if (!session) throw new Error('Range session not found');
     const updated = abortRangeSession(session);
-    rangeSessions.set(updated.id, updated);
+    await saveRangeSession(updated);
     return updated;
   }),
 });
