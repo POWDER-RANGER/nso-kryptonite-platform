@@ -170,7 +170,7 @@ const rangeRouter = router({
   create: rangeProcedure.input(z.object({
     name: z.string().trim().min(1).max(80),
     scenarioId: z.string().min(1),
-    mode: z.enum(['TRAINING', 'OPERATOR_VS_OPERATOR']),
+    mode: z.enum(['TESTING', 'TRAINING', 'OPERATOR_VS_OPERATOR']),
   })).mutation(async ({ input }) => {
     if ((await listRangeSessions()).length >= 100) {
       throw new TRPCError({ code: 'TOO_MANY_REQUESTS', message: 'The range session limit has been reached.' });
