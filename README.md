@@ -19,6 +19,8 @@
 
 ---
 
+> **Current implementation status:** The executable slice is a synthetic cyber range for training and turn-based Red/Blue scoring. The remaining architecture and module descriptions below express design intent; they are not evidence that real payload systems, C2, RF tooling, AI services, sensors, or mesh operations are connected or production-ready. See [Implementation Status](docs/IMPLEMENTATION_STATUS.md) and the [Operator Guide](docs/OPERATOR.md).
+
 ## Run the current synthetic range
 
 Requires Node.js 20 or newer. The initial training slice does not require a database service:
@@ -28,16 +30,22 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard.
+Open `http://localhost:3000`, choose **Training Range**, and create one of three exercise modes:
 
-By default, sessions are held in memory and disappear when the API restarts. For optional MySQL persistence, copy `.env.example` to `.env`, configure `DATABASE_URL` for a database you control, set `RANGE_STORAGE=mysql`, and run:
+- **Detection Testing** evaluates simple `source=`, `severity=`, and `contains=` filters against a four-event synthetic corpus and reports TP/FP/FN, precision, and recall.
+- **Training** lets you advance synthetic events and submit written investigation, detection, containment, and recovery rationale.
+- **Operator vs Operator** alternates Red stage progression with Blue response turns and calculates a score-based result.
+
+All scenarios are synthetic. Detection Testing is a small custom filter evaluator, not a Sigma/YARA/KQL parser or a connection to real sensors. In operator-vs-operator mode, Red advances one stage, control passes to Blue for defensive actions, and **End Blue turn** returns control to Red. A completed match displays the score-based winner.
+
+By default, sessions are held in memory and disappear when the API restarts. For optional MySQL persistence, copy `.env.example` to `.env`, configure `DATABASE_URL` for a database you control, set `RANGE_STORAGE=mysql`, then run:
 
 ```bash
 npm run db:push
 npm run dev
 ```
 
-The session API is deliberately disabled in production-like environments until operator authentication and authorization are implemented. Do not expose this prototype as a public multiplayer service.
+Production-like REST sessions use separate `RANGE_RED_TOKEN`, `RANGE_BLUE_TOKEN`, and `RANGE_FACILITATOR_TOKEN` environment secrets, each randomly generated, distinct, and at least 32 characters long. Configure them in the hosting dashboard, never in source control. These shared role keys are a controlled-pilot boundary—not user accounts or MFA. MySQL persistence and deployed runtime still require verification. Do not expose this prototype as a public multiplayer service.
 
 ## ⚔️ Four Modes of Operation
 
