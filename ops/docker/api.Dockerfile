@@ -2,6 +2,7 @@
 
 # --- Development Stage ---
 FROM node:20-alpine AS development
+ENV NODE_ENV=development
 WORKDIR /app
 
 # Install dependencies (including dev)
@@ -18,6 +19,7 @@ CMD ["npm", "run", "dev"]
 
 # --- Production Stage ---
 FROM node:20-alpine AS production
+ENV NODE_ENV=production
 WORKDIR /app
 
 # Install production dependencies only
