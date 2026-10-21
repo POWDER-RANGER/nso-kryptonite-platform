@@ -4,6 +4,7 @@
  */
 
 import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { trpcServer } from '@trpc/server/adapters/fetch';
@@ -116,41 +117,15 @@ app.get('/api/v1/exercises', (c) => c.json({
   error: 'Legacy exercises API is not implemented. Use /api/v1/range for the synthetic training range.',
 }, 501));
 
-// Start server
-const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
-
-console.log(`🚀 NSO Kryptonite API starting on port ${port}...`);
-
-// Bun/Node compatible server start
-if (typeof Bun !== 'undefined') {
-  Bun.serve({
-    fetch: app.fetch,
-    port,
-    websocket: {
-      message(ws, message) {
-        // WebSocket message handling for real-time streams
-        ws.send(JSON.stringify({ type: 'HEARTBEAT', timestamp: new Date().toISOString() }));
-      },
-      open(ws) {
-        console.log('🔌 WebSocket client connected');
-      },
-      close(ws) {
-        console.log('🔌 WebSocket client disconnected');
-      },
-    },
-  });
-} else {
-  // Node.js fallback
-  const { createServer } = await import('http');
-  createServer(async (req, res) => {
-    const response = await app.fetch(req as unknown as Request);
-    res.writeHead(response.status, Object.fromEntries(response.headers));
-    res.end(await response.text());
-  }).listen(port, () => {
-    console.log(`🚀 Server running on http://localhost:${port}`);
-  });
+// Start through the supported Hono Node adapter. Casting Node's IncomingMessage
+// directly to Fetch Request does not work and silently breaks JSON bodies/headers.
+const port = Number.parseInt(process.env.PORT ?? '3001', 10);
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+  throw new Error('PORT must be a valid TCP port number');
 }
 
-console.log(`✅ NSO Kryptonite API ready`);
-console.log(`   tRPC endpoint: http://localhost:${port}/api/trpc`);
-console.log(`   Health:        http://localhost:${port}/health`);
+serve({ fetch: app.fetch, port }, (info) => {
+  console.log(`NSO Kryptonite API listening on http://localhost:${info.port}`);
+  console.log(`tRPC endpoint: http://localhost:${info.port}/api/trpc`);
+  console.log(`Health:        http://localhost:${info.port}/health`);
+});
