@@ -12,7 +12,7 @@ The first implementation milestone is a local, synthetic cyber-range for defensi
 - Record Blue-team investigation findings, detection rationale, and containment decisions.
 - Award objective points and show a Red/Blue scorecard using a transparent keyword-based evidence/action rubric (not AI judgment).
 - Finish the exercise explicitly after all stages have been revealed; abort an active session.
-- API surfaces: `GET /api/v1/range/scenarios`, `GET /api/v1/range/sessions`, `POST /api/v1/range/sessions`, `GET /api/v1/range/sessions/:id`, `POST /api/v1/range/sessions/:id/actions`, and `POST /api/v1/range/sessions/:id/abort`.
+- API surfaces: `GET /api/v1/range/scenarios`, `GET /api/v1/range/status`, `GET /api/v1/range/sessions`, `POST /api/v1/range/sessions`, `GET /api/v1/range/sessions/:id`, `POST /api/v1/range/sessions/:id/actions`, and `POST /api/v1/range/sessions/:id/abort`.
 
 All scenario records are synthetic and local to the application. No scenario action scans or contacts a real network, exploits a service, captures credentials, or transmits wireless traffic.
 
