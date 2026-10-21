@@ -18,17 +18,19 @@ All scenario records are synthetic and local to the application. No scenario act
 
 ## Current limitations
 
-- Session state is held in a process-local in-memory map. Restarting the API loses sessions; multiple API instances will not share state.
+- Memory mode is the default and loses sessions when the API restarts. Optional MySQL persistence now uses the `range_sessions` table when `RANGE_STORAGE=mysql` is set and `npm run db:push` has been run; this database path has not yet been runtime-verified.
+- Session updates are full-snapshot writes, not concurrency-safe multiplayer transactions.
 - Operator-versus-operator is currently a turn-based scorecard in one session, not an authenticated multi-user or networked competition.
 - The built-in event sequences are educational fixtures, not evidence from real sensors.
-- Authentication/authorization enforcement for the new range API, persistent storage, concurrency controls, audit-chain integration, exportable debrief reports, and end-to-end browser tests are not yet verified.
+- Operator authentication/authorization is not implemented for the new range API. Session routes intentionally return 503 in production until authorization exists; the tRPC session procedures are also denied in `NODE_ENV=production`.
+- MySQL persistence is implemented in code but unverified against a running database. Concurrency controls, audit-chain integration, exportable debrief reports, and end-to-end browser tests are not yet verified.
 - The other modules and infrastructure described in the architecture/README are not assumed to be operational merely because their documentation or folders exist.
 - This implementation has not yet been run through the repository's TypeScript check, unit tests, browser tests, or a deployed environment from this change branch.
 
 ## Next milestones
 
 1. Run TypeScript, unit, API integration, and browser tests; repair any failures.
-2. Add durable storage with schema-backed sessions and safe migrations.
+2. Verify MySQL persistence against a real database, including migration, restart survival, and error handling.
 3. Add explicit operator identities, role-based authorization, room membership, and facilitator-controlled match lifecycle.
 4. Build objective authoring, hint reveal, replay/debrief, export, and reproducible score calculation.
 5. Add defensive data adapters only after validation, scope enforcement, and audit requirements are tested.
