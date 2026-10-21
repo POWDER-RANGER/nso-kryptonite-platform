@@ -19,6 +19,7 @@ import {
   type RangeMode,
 } from '../engine/scenario/simulator';
 import { getRangeSession, listRangeSessions, saveRangeSession } from './queries/range-store';
+import { authorizeRangeRequest } from './queries/range-auth';
 
 export const app = new Hono();
 
@@ -41,13 +42,12 @@ app.use(
   })
 );
 
-// Safe synthetic-range REST API. Scenario definitions are public; session operations
-// stay disabled in production until operator authentication and authorization are enforced.
-const productionGate = { error: 'Range sessions are disabled in production until operator authorization is enforced.' };
+// Static scenario descriptions are public. Session operations require the appropriate role token in production.
 app.get('/api/v1/range/scenarios', (c) => c.json({ data: listScenarios() }));
 
 app.get('/api/v1/range/sessions', async (c) => {
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
+  const authorization = authorizeRangeRequest(c.req.raw);
+  if (!authorization.allowed) return c.json({ error: authorization.error }, authorization.status);
   const sessions = await listRangeSessions();
   return c.json({ data: sessions.map((session) => ({
     id: session.id, name: session.name, scenarioId: session.scenarioId,
@@ -58,14 +58,16 @@ app.get('/api/v1/range/sessions', async (c) => {
 });
 
 app.get('/api/v1/range/sessions/:id', async (c) => {
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
+  const authorization = authorizeRangeRequest(c.req.raw);
+  if (!authorization.allowed) return c.json({ error: authorization.error }, authorization.status);
   const session = await getRangeSession(c.req.param('id'));
   if (!session) return c.json({ error: 'Range session not found' }, 404);
   return c.json({ data: session });
 });
 
 app.post('/api/v1/range/sessions', async (c) => {
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
+  const authorization = authorizeRangeRequest(c.req.raw, ['FACILITATOR']);
+  if (!authorization.allowed) return c.json({ error: authorization.error }, authorization.status);
   try {
     const body = await c.req.json() as { name?: unknown; scenarioId?: unknown; mode?: unknown };
     if (typeof body.name !== 'string' || !body.name.trim() || body.name.length > 80) {
@@ -91,9 +93,6 @@ app.post('/api/v1/range/sessions', async (c) => {
 });
 
 app.post('/api/v1/range/sessions/:id/actions', async (c) => {
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
-  const session = await getRangeSession(c.req.param('id'));
-  if (!session) return c.json({ error: 'Range session not found' }, 404);
   try {
     const body = await c.req.json() as { action?: unknown; note?: unknown };
     const allowed = ['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION', 'END_TURN', 'FINISH'];
@@ -103,6 +102,12 @@ app.post('/api/v1/range/sessions/:id/actions', async (c) => {
     if (body.note !== undefined && typeof body.note !== 'string') {
       return c.json({ error: 'Note must be text.' }, 400);
     }
+    const requiredRole = body.action === 'ADVANCE_SCENARIO' ? 'RED' :
+      body.action === 'FINISH' ? 'FACILITATOR' : 'BLUE';
+    const authorization = authorizeRangeRequest(c.req.raw, [requiredRole]);
+    if (!authorization.allowed) return c.json({ error: authorization.error }, authorization.status);
+    const session = await getRangeSession(c.req.param('id'));
+    if (!session) return c.json({ error: 'Range session not found' }, 404);
     const updated = performRangeAction(session, body.action as RangeAction, body.note as string | undefined);
     await saveRangeSession(updated);
     return c.json({ data: updated });
@@ -112,7 +117,8 @@ app.post('/api/v1/range/sessions/:id/actions', async (c) => {
 });
 
 app.post('/api/v1/range/sessions/:id/abort', async (c) => {
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') return c.json(productionGate, 503);
+  const authorization = authorizeRangeRequest(c.req.raw, ['FACILITATOR']);
+  if (!authorization.allowed) return c.json({ error: authorization.error }, authorization.status);
   const session = await getRangeSession(c.req.param('id'));
   if (!session) return c.json({ error: 'Range session not found' }, 404);
   try {
