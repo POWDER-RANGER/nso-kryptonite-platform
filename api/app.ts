@@ -79,7 +79,7 @@ app.post('/api/v1/range/sessions', async (c) => {
     if (typeof body.scenarioId !== 'string' || !['identity-anomaly', 'wireless-baseline', 'protocol-anomaly'].includes(body.scenarioId)) {
       return c.json({ error: 'Choose a supported synthetic scenario.' }, 400);
     }
-    if (body.mode !== 'TRAINING' && body.mode !== 'OPERATOR_VS_OPERATOR') {
+    if (body.mode !== 'TESTING' && body.mode !== 'TRAINING' && body.mode !== 'OPERATOR_VS_OPERATOR') {
       return c.json({ error: 'Mode must be TRAINING or OPERATOR_VS_OPERATOR.' }, 400);
     }
     if ((await listRangeSessions()).length >= 100) {
