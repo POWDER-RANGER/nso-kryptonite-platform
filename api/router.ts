@@ -163,7 +163,7 @@ const rangeRouter = router({
 
   act: publicProcedure.input(z.object({
     id: z.string().uuid(),
-    action: z.enum(['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION']),
+    action: z.enum(['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION', 'FINISH']),
     note: z.string().max(500).optional(),
   })).mutation(({ input }) => {
     const session = rangeSessions.get(input.id);
