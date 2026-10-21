@@ -105,6 +105,7 @@ export function createRangeSession(input: { name: string; scenarioId: string; mo
     objectives: [
       { id: 'red-progress', label: 'Advance the simulated scenario', team: 'RED', points: 10, complete: false },
       { id: 'blue-triage', label: 'Identify and explain the anomaly', team: 'BLUE', points: 20, complete: false },
+      { id: 'blue-detection', label: 'Submit a detection condition tied to telemetry', team: 'BLUE', points: 15, complete: false },
       { id: 'blue-contain', label: 'Record a justified containment decision', team: 'BLUE', points: 15, complete: false },
       { id: 'blue-recover', label: 'Validate recovery evidence', team: 'BLUE', points: 15, complete: false },
     ],
@@ -177,7 +178,7 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
       throw new Error('Detection submission must describe a match condition, source, threshold, or detection rule.');
     }
     next.notes.push(`BLUE DETECTION SUBMISSION: ${detection}`);
-    if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-triage');
+    if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-detection');
   } else if (action === 'FINISH') {
     const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
     if (next.stage < scenario.stages.length) throw new Error('Reveal all scenario stages before finishing');
