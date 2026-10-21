@@ -284,11 +284,18 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
   } else if (action === 'SUBMIT_DETECTION') {
     if (!note?.trim()) throw new Error('Detection submission requires a rule or detection rationale');
     const detection = note.trim().slice(0, 500);
-    if (!matchesAny(detection, ['detect', 'condition', 'match', 'event id', 'eventid', 'threshold', 'sigma', 'alert', 'when', 'source'])) {
-      throw new Error('Detection submission must describe a match condition, source, threshold, or detection rule.');
+    if (next.mode === 'TESTING') {
+      const result = evaluateDetectionRule(next.scenarioId, detection, now);
+      next.detectionTests.unshift(result);
+      next.notes.push('DETECTION TEST: ' + (result.passed ? 'PASS' : 'FAIL') + ' — TP ' + result.truePositives + ', FP ' + result.falsePositives + ', FN ' + result.falseNegatives + '.');
+      if (result.passed) award('blue-detection');
+    } else {
+      if (!matchesAny(detection, ['detect', 'condition', 'match', 'event id', 'eventid', 'threshold', 'sigma', 'alert', 'when', 'source'])) {
+        throw new Error('Detection submission must describe a match condition, source, threshold, or detection rule.');
+      }
+      next.notes.push('BLUE DETECTION SUBMISSION: ' + detection);
+      if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-detection');
     }
-    next.notes.push(`BLUE DETECTION SUBMISSION: ${detection}`);
-    if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-detection');
   } else if (action === 'END_TURN') {
     if (next.mode !== 'OPERATOR_VS_OPERATOR' || next.currentTurn !== 'BLUE') {
       throw new Error('End turn is only available during an operator-vs-operator Blue turn.');
