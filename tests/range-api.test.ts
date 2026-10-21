@@ -88,20 +88,24 @@ describe('synthetic range REST API', () => {
   });
 
   it('fails closed for session routes in production while keeping static scenario metadata public', async () => {
-    const oldNodeEnv = process.env.NODE_ENV;
-    const oldRender = process.env.RENDER;
+    const keys = ['NODE_ENV', 'RENDER', 'RANGE_RED_TOKEN', 'RANGE_BLUE_TOKEN', 'RANGE_FACILITATOR_TOKEN'] as const;
+    const oldValues = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
     try {
       process.env.NODE_ENV = 'production';
       delete process.env.RENDER;
+      delete process.env.RANGE_RED_TOKEN;
+      delete process.env.RANGE_BLUE_TOKEN;
+      delete process.env.RANGE_FACILITATOR_TOKEN;
       const sessionResponse = await app.request('/api/v1/range/sessions');
       expect(sessionResponse.status).toBe(503);
       const scenarios = await app.request('/api/v1/range/scenarios');
       expect(scenarios.status).toBe(200);
     } finally {
-      if (oldNodeEnv === undefined) delete process.env.NODE_ENV;
-      else process.env.NODE_ENV = oldNodeEnv;
-      if (oldRender === undefined) delete process.env.RENDER;
-      else process.env.RENDER = oldRender;
+      for (const key of keys) {
+        const value = oldValues[key];
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
     }
   });
 });
