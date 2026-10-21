@@ -30,7 +30,13 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard. In operator-vs-operator mode, Red advances one stage, control passes to Blue for defensive actions, and **End Blue turn** returns control to Red. A completed match displays the score-based winner.
+Open `http://localhost:3000`, choose **Training Range**, and create one of three exercise modes:
+
+- **Detection Testing** evaluates simple `source=`, `severity=`, and `contains=` filters against a four-event synthetic corpus and reports TP/FP/FN, precision, and recall.
+- **Training** lets you advance synthetic events and submit written investigation, detection, containment, and recovery rationale.
+- **Operator vs Operator** alternates Red stage progression with Blue response turns and calculates a score-based result.
+
+All scenarios are synthetic. Detection Testing is a small custom filter evaluator, not a Sigma/YARA/KQL parser or a connection to real sensors. In operator-vs-operator mode, Red advances one stage, control passes to Blue for defensive actions, and **End Blue turn** returns control to Red. A completed match displays the score-based winner.
 
 By default, sessions are held in memory and disappear when the API restarts. For optional MySQL persistence, copy `.env.example` to `.env`, configure `DATABASE_URL` for a database you control, set `RANGE_STORAGE=mysql`, then run:
 
