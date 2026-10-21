@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import mysql from 'mysql2/promise';
+import mysql, { type Pool } from 'mysql2/promise';
 import { drizzle, type MySql2Database } from 'drizzle-orm/mysql2';
 import * as schema from '../../db/schema';
 
-let pool: mysql.Pool | undefined;
+let pool: Pool | undefined;
 let database: MySql2Database<typeof schema> | undefined;
 
 /** Lazily creates the database pool; import alone has no network side effects. */
