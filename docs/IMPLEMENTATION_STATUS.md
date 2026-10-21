@@ -20,9 +20,9 @@ All scenario records are synthetic and local to the application. No scenario act
 
 - Memory mode is the default and loses sessions when the API restarts. Optional MySQL persistence now uses the `range_sessions` table when `RANGE_STORAGE=mysql` is set and `npm run db:push` has been run; this database path has not yet been runtime-verified.
 - Session updates are full-snapshot writes, not concurrency-safe multiplayer transactions.
-- Operator-versus-operator is currently a turn-based scorecard in one session, not an authenticated multi-user or networked competition.
-- The built-in event sequences are educational fixtures, not evidence from real sensors.
-- Operator authentication/authorization is not implemented for the new range API. Session routes intentionally return 503 in production until authorization exists; the tRPC session procedures are also denied in `NODE_ENV=production`.
+- Operator-versus-operator now enforces Red advance → Blue response → Blue handoff and computes a winner from the final score. It remains one shared session, not an authenticated multi-user or networked competition.
+- The built-in event sequences are educational fixtures, not evidence from real sensors. The current scoring rubric is transparent keyword matching and is not a security certification or expert assessment.
+- Operator authentication/authorization is not implemented for the new range API. Session routes intentionally return 503 when `NODE_ENV=production` or `RENDER=true`; tRPC session procedures are also denied in those environments until authorization exists.
 - MySQL persistence is implemented in code but unverified against a running database. Concurrency controls, audit-chain integration, exportable debrief reports, and end-to-end browser tests are not yet verified.
 - The other modules and infrastructure described in the architecture/README are not assumed to be operational merely because their documentation or folders exist.
 - This implementation has not yet been run through the repository's TypeScript check, unit tests, browser tests, or a deployed environment from this change branch.
