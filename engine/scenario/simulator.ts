@@ -43,8 +43,6 @@ export interface RangeSession {
   notes: string[];
 }
 
-export const rangeSessions = new Map<string, RangeSession>();
-
 const SCENARIOS = [
   {
     id: 'identity-anomaly',
