@@ -19,7 +19,7 @@ export function RangeAccess() {
     event.preventDefault();
     saveRangeAccess(role, secret);
     setSecret('');
-    setHasSecret(Boolean(secret.trim()));
+    setHasSecret(Boolean(sessionStorage.getItem('nso_kryptonite_range_token')));
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2500);
   }
@@ -38,7 +38,7 @@ export function RangeAccess() {
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest">
             <KeyRound className="h-3.5 w-3.5 text-red-400" /> Operator access
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">Local development needs no key. A deployed range needs a role key.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Local development needs no key. A deployed range requires a role key.</p>
         </div>
         <label className="block text-xs">Role
           <select value={role} onChange={(event) => setRole(event.target.value as RangeOperatorRole)} className="mt-1 block min-w-36 border border-border bg-background px-2 py-2 text-sm">
@@ -64,7 +64,7 @@ export function RangeAccess() {
         </button>}
       </form>
       <p aria-live="polite" className="mt-2 text-xs text-muted-foreground">
-        {saved ? 'Access setting updated for this browser tab.' : hasSecret ? 'A role key is stored in tab-scoped session storage.' : 'No key stored. Anonymous range access is accepted only in local development.'}
+        {saved ? 'Access setting updated for this browser tab.' : hasSecret ? 'A key is stored for this tab; the key itself determines server permissions.' : 'No key stored. Anonymous range access is accepted only in local development.'}
       </p>
     </section>
   );
