@@ -137,7 +137,7 @@ const rangeProcedure = publicProcedure.use(({ next }) => {
   if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'Range sessions are disabled in production until operator authorization is enforced.',
+      message: 'Range-session tRPC procedures remain disabled on production-like hosts; use role-authorized REST routes instead.',
     });
   }
   return next();
