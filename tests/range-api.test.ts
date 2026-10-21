@@ -26,7 +26,7 @@ async function postAction(id: string, action: string, note?: string) {
   });
 }
 
-async function createSession(mode: 'TRAINING' | 'OPERATOR_VS_OPERATOR') {
+async function createSession(mode: 'TESTING' | 'TRAINING' | 'OPERATOR_VS_OPERATOR') {
   const response = await app.request('/api/v1/range/sessions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -55,6 +55,29 @@ describe('synthetic range REST API', () => {
     const body = await response.json() as { data: { id: string; events: unknown[] } };
     expect(body.data.id).toBe(created.id);
     expect(body.data.events).toHaveLength(0);
+  });
+
+  it('runs synthetic detection tests through the REST API and locks a testing session', async () => {
+    const created = await createSession('TESTING');
+    expect(created.currentTurn).toBeNull();
+
+    const prematureFinish = await postAction(created.id, 'FINISH');
+    expect(prematureFinish.status).toBe(400);
+    expect((await prematureFinish.json() as { error: string }).error).toContain('at least one detection test');
+
+    const resultResponse = await postAction(created.id, 'SUBMIT_DETECTION', 'source=WINDOWS,EDR;severity=MEDIUM,HIGH');
+    expect(resultResponse.status).toBe(200);
+    const result = (await resultResponse.json() as { data: { stage: number; detectionTests: Array<{passed:boolean;truePositives:number;falsePositives:number;falseNegatives:number}>; blueScore:number } }).data;
+    expect(result.stage).toBe(0);
+    expect(result.detectionTests[0].passed).toBe(true);
+    expect(result.detectionTests[0].truePositives).toBe(2);
+    expect(result.detectionTests[0].falsePositives).toBe(0);
+    expect(result.detectionTests[0].falseNegatives).toBe(0);
+    expect(result.blueScore).toBe(15);
+
+    const finish = await postAction(created.id, 'FINISH');
+    expect(finish.status).toBe(200);
+    expect((await finish.json() as { data: { status: string } }).data.status).toBe('COMPLETED');
   });
 
   it('enforces Red advance, Blue response, Blue handoff, and final scoring lifecycle', async () => {
