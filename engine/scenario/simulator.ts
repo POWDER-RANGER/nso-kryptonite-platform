@@ -103,7 +103,7 @@ export function createRangeSession(input: { name: string; scenarioId: string; mo
     blueScore: 0,
     events: [],
     objectives: [
-      { id: 'red-progress', label: 'Advance the simulated scenario', team: 'RED', points: 10, complete: false },
+      { id: 'red-progress', label: 'Reveal all 4 synthetic stages (10 points per stage)', team: 'RED', points: 40, complete: false },
       { id: 'blue-triage', label: 'Identify and explain the anomaly', team: 'BLUE', points: 20, complete: false },
       { id: 'blue-detection', label: 'Submit a detection condition tied to telemetry', team: 'BLUE', points: 15, complete: false },
       { id: 'blue-contain', label: 'Record a justified containment decision', team: 'BLUE', points: 15, complete: false },
@@ -164,7 +164,7 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     next.stage += 1;
     if (next.mode === 'OPERATOR_VS_OPERATOR') next.currentTurn = 'BLUE';
     next.redScore += 10;
-    objective('red-progress').complete = true;
+    if (next.stage === scenario.stages.length) objective('red-progress').complete = true;
     // Keep the session open for investigation and recovery validation after the last event.
   } else if (action === 'INVESTIGATE') {
     if (!note?.trim()) throw new Error('Investigation requires a written finding');
@@ -174,7 +174,8 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     }
     next.notes.push(`BLUE INVESTIGATION: ${finding}`);
     if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-triage');
-    if (next.events.some((event) => event.title === 'Recovery evidence available') && matchesAny(finding, ['reset', 'recover', 'clean', 'follow-up'])) award('blue-recover');
+    const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
+    if (next.stage === scenario.stages.length && matchesAny(finding, ['reset', 'recover', 'clean', 'follow-up', 'correction', 'restored', 'triage result'])) award('blue-recover');
   } else if (action === 'CONTAIN') {
     if (!note?.trim()) throw new Error('Containment requires a justification');
     const rationale = note.trim().slice(0, 500);
