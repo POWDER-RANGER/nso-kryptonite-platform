@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ClipboardCheck, Shield, Target, Clock } from 'lucide-react';
+import { rangeAuthHeaders } from '@/lib/range-api';
 
 interface Summary { id:string; name:string; scenarioId:string; mode:string; status:string; createdAt:string; redScore:number; blueScore:number; stage:number; eventCount:number }
 interface Detail extends Summary { events:Array<{id:string;timestamp:string;source:string;severity:string;title:string;detail:string;clue:string;stage:number}>; objectives:Array<{id:string;label:string;team:string;points:number;complete:boolean}>; notes:string[] }
 async function fetchJson<T>(url:string):Promise<T>{
-  const response=await fetch(url);
+  const response=await fetch(url, { headers: rangeAuthHeaders() });
   const body=await response.json();
   if(!response.ok) throw new Error(body.error||'Unable to load debrief');
   return body.data as T;
@@ -16,10 +17,23 @@ export function DebriefRoom() {
   const [detail,setDetail]=useState<Detail|null>(null);
   const [error,setError]=useState('');
   useEffect(()=>{
-    fetchJson<Summary[]>('/api/v1/range/sessions').then((items)=>{
-      setSessions(items);
-      if(items[0]) setSelectedId(items[0].id);
-    }).catch((e)=>setError(e instanceof Error?e.message:'Range API unavailable'));
+    let mounted = true;
+    const loadSessions = () => {
+      fetchJson<Summary[]>('/api/v1/range/sessions').then((items)=>{
+        if (!mounted) return;
+        setSessions(items);
+        setError('');
+        if(items[0]) setSelectedId((previous)=>previous || items[0].id);
+      }).catch((e)=>{
+        if (mounted) setError(e instanceof Error?e.message:'Range API unavailable');
+      });
+    };
+    loadSessions();
+    window.addEventListener('range-access-changed', loadSessions);
+    return () => {
+      mounted = false;
+      window.removeEventListener('range-access-changed', loadSessions);
+    };
   },[]);
   useEffect(()=>{
     if(!selectedId){setDetail(null);return;}
