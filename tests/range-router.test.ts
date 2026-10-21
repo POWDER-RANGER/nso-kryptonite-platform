@@ -23,5 +23,7 @@ describe('range router production boundary', () => {
       scenarioId: 'identity-anomaly',
       mode: 'TRAINING',
     })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(caller.exercise.list()).rejects.toMatchObject({ code: 'NOT_IMPLEMENTED' });
+    await expect(caller.mesh.register({ nodeType: 'SENSOR', publicKey: 'test-key', hostname: 'test-node' })).rejects.toMatchObject({ code: 'NOT_IMPLEMENTED' });
   });
 });
