@@ -1,11 +1,15 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { appRouter } from '../api/router';
 
 const originalNodeEnv = process.env.NODE_ENV;
+const originalRender = process.env.RENDER;
+beforeAll(() => { delete process.env.RENDER; });
 
 afterEach(() => {
   if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
   else process.env.NODE_ENV = originalNodeEnv;
+  if (originalRender === undefined) delete process.env.RENDER;
+  else process.env.RENDER = originalRender;
 });
 
 describe('range router production boundary', () => {
