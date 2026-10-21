@@ -61,7 +61,7 @@ The scoring rubric is intentionally simple. It is not a security certification, 
 
 ## 5. Finish and debrief
 
-After all stages are revealed, the facilitator selects **Finish exercise and lock scorecard**. In competition mode, all Blue turns must be handed back to Red before finishing. The final report displays Red/Blue scores and a score-based winner. A facilitator can abort an active session. Open **Debrief Room** to review the selected session's objective states, recorded event timeline, notes, and scores.
+After all stages are revealed, the facilitator selects **Finish exercise and lock scorecard**. In competition mode, all Blue turns must be handed back to Red before finishing. The final report displays Red/Blue scores and a score-based winner. A facilitator can abort an active session. Open **Debrief Room** to review the selected session's objective states, recorded event timeline, notes, and scores. Use **Export JSON** to download a copy of the selected session report; this browser download has not yet been end-to-end tested.
 
 ## 6. Supported diagnostic commands
 
@@ -73,7 +73,7 @@ The command line currently supports `help`, `status`, `healthcheck`, `scenarios`
 - Production-like session REST routes require role credentials; missing configuration fails closed. tRPC session procedures remain disabled on production-like hosts.
 - Sessions are stored in memory by default. MySQL persistence uses full-session snapshots and does not yet provide concurrency-safe multiplayer transactions.
 - Authentication is environment-bound role keys, not individual user accounts or MFA.
-- Real sensor adapters, private asymmetric team views, audit-chain integration, session export, browser end-to-end testing, and production deployment verification remain outstanding.
+- Real sensor adapters, private asymmetric team views, audit-chain integration, browser end-to-end testing, and production deployment verification remain outstanding.
 - Do not treat architecture diagrams, repository folders, or sample data as proof that a capability is connected or working.
 
 Before accepting changes, run:
