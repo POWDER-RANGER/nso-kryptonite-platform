@@ -172,7 +172,7 @@ const rangeRouter = router({
 
   act: rangeProcedure.input(z.object({
     id: z.string().uuid(),
-    action: z.enum(['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION', 'FINISH']),
+    action: z.enum(['ADVANCE_SCENARIO', 'INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION', 'END_TURN', 'FINISH']),
     note: z.string().max(500).optional(),
   })).mutation(async ({ input }) => {
     const session = await getRangeSession(input.id);
