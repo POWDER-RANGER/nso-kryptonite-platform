@@ -25,6 +25,7 @@ describe('range role authentication', () => {
   it('requires all distinct configured secrets to have at least 32 characters', () => {
     expect(isRangeAuthConfigured(configured)).toBe(true);
     expect(isRangeAuthConfigured({ ...configured, RANGE_BLUE_TOKEN: 'short' })).toBe(false);
+    expect(isRangeAuthConfigured({ ...configured, RANGE_BLUE_TOKEN: configured.RANGE_RED_TOKEN })).toBe(false);
     expect(authorizeRangeRequest(request(), ['RED'], { NODE_ENV: 'production' } as NodeJS.ProcessEnv)).toMatchObject({
       allowed: false,
       status: 503,
