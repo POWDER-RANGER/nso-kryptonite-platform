@@ -14,11 +14,43 @@ describe('safe range simulator', () => {
   it('emits synthetic events and scores each Red stage', () => {
     const session = createRangeSession({ name: 'test', scenarioId: 'identity-anomaly', mode: 'OPERATOR_VS_OPERATOR' });
     const first = performRangeAction(session, 'ADVANCE_SCENARIO');
-    const second = performRangeAction(first, 'ADVANCE_SCENARIO');
+    expect(() => performRangeAction(first, 'ADVANCE_SCENARIO')).toThrow('Red must wait');
+    const redTurn = performRangeAction(first, 'END_TURN');
+    const second = performRangeAction(redTurn, 'ADVANCE_SCENARIO');
     expect(first.events[0].detail).toContain('Synthetic');
     expect(first.redScore).toBe(10);
     expect(second.redScore).toBe(20);
     expect(second.stage).toBe(2);
+    expect(second.currentTurn).toBe('BLUE');
+  });
+
+  it('enforces Red then Blue turns without treating training as multiplayer', () => {
+    let session = createRangeSession({ name: 'turn test', scenarioId: 'identity-anomaly', mode: 'OPERATOR_VS_OPERATOR' });
+    expect(session.currentTurn).toBe('RED');
+    expect(() => performRangeAction(session, 'INVESTIGATE', 'Correlated identity events.')).toThrow('Blue actions are only allowed');
+    session = performRangeAction(session, 'ADVANCE_SCENARIO');
+    expect(session.currentTurn).toBe('BLUE');
+    expect(() => performRangeAction(session, 'ADVANCE_SCENARIO')).toThrow('Red must wait');
+    session = performRangeAction(session, 'INVESTIGATE', 'Baseline event is within expected identity behavior.');
+    session = performRangeAction(session, 'END_TURN');
+    expect(session.currentTurn).toBe('RED');
+    expect(() => performRangeAction(session, 'INVESTIGATE', 'Correlated events.')).toThrow('Blue actions are only allowed');
+
+    const training = createRangeSession({ name: 'solo test', scenarioId: 'identity-anomaly', mode: 'TRAINING' });
+    expect(training.currentTurn).toBeNull();
+    expect(performRangeAction(training, 'ADVANCE_SCENARIO').currentTurn).toBeNull();
+  });
+
+  it('requires all Blue turns to be handed back before finishing competition', () => {
+    let session = createRangeSession({ name: 'finish turn test', scenarioId: 'identity-anomaly', mode: 'OPERATOR_VS_OPERATOR' });
+    for (let stage = 0; stage < 4; stage += 1) {
+      session = performRangeAction(session, 'ADVANCE_SCENARIO');
+      expect(session.currentTurn).toBe('BLUE');
+      if (stage === 3) expect(() => performRangeAction(session, 'FINISH')).toThrow('Blue must end the current turn');
+      session = performRangeAction(session, 'END_TURN');
+    }
+    session = performRangeAction(session, 'FINISH');
+    expect(session.status).toBe('COMPLETED');
   });
 
   it('scores defensive investigation and requires rationale', () => {
