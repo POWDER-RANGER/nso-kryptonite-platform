@@ -6,6 +6,8 @@ import 'dotenv/config';
  */
 
 import { Hono } from 'hono';
+import { existsSync } from 'node:fs';
+import { serveStatic } from '@hono/node-server/serve-static';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { trpcServer } from '@trpc/server/adapters/fetch';
@@ -134,6 +136,19 @@ app.post('/api/v1/range/sessions/:id/abort', async (c) => {
 app.get('/api/v1/exercises', (c) => c.json({
   error: 'Legacy exercises API is not implemented. Use /api/v1/range for the synthetic training range.',
 }, 501));
+
+
+if (existsSync('./dist/index.html')) {
+  // When built, serve the same Vite bundle and REST API from one Node service.
+  // API handlers above take precedence; only HTML navigation requests get the SPA fallback.
+  app.use('*', serveStatic({ root: './dist' }));
+  app.get('*', (c, next) => {
+    if (c.req.path.startsWith('/api/') || c.req.path === '/health') return next();
+    const accept = c.req.header('accept') ?? '';
+    if (!accept.includes('text/html')) return c.notFound();
+    return serveStatic({ root: './dist', path: '/index.html' })(c, next);
+  });
+}
 
 
 export default app;
