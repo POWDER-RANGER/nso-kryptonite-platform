@@ -32,7 +32,6 @@ All scenario records are synthetic and local to the application. No scenario act
 1. Run TypeScript, unit, API integration, and browser tests; repair any failures.
 2. Verify MySQL persistence against a real database, including migration, restart survival, and error handling.
 3. Harden the role-key pilot into individual operator accounts, secure session management, room membership, and private Red/Blue information boundaries.
-3. Add explicit operator identities, role-based authorization, room membership, and facilitator-controlled match lifecycle.
 4. Build objective authoring, hint reveal, replay/debrief, export, and reproducible score calculation.
 5. Add defensive data adapters only after validation, scope enforcement, and audit requirements are tested.
 6. Keep offensive-side activity abstract and confined to the synthetic range unless a separately reviewed, isolated lab integration is designed and validated.
