@@ -21,9 +21,19 @@ const t = initTRPC.create();
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
+const prototypeProcedure = publicProcedure.use(({ next }) => {
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') {
+    throw new TRPCError({
+      code: 'NOT_IMPLEMENTED',
+      message: 'This API module is still a scaffold and is not available on production-like hosts.',
+    });
+  }
+  return next();
+});
+
 // Exercise router
 const exerciseRouter = router({
-  list: publicProcedure.query(async () => {
+  list: prototypeProcedure.query(async () => {
     // TODO: Implement with Drizzle ORM
     return [
       { id: 1, name: 'Tier 1: AD Basics', status: 'DRAFT' as const },
@@ -31,7 +41,7 @@ const exerciseRouter = router({
     ];
   }),
 
-  getById: publicProcedure
+  getById: prototypeProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       return {
@@ -41,7 +51,7 @@ const exerciseRouter = router({
       };
     }),
 
-  create: publicProcedure
+  create: prototypeProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -57,12 +67,12 @@ const exerciseRouter = router({
 
 // Telemetry router
 const telemetryRouter = router({
-  stream: publicProcedure.subscription(async function* () {
+  stream: prototypeProcedure.subscription(async function* () {
     // TODO: Implement WebSocket streaming
     yield { type: 'TELEMETRY', data: null };
   }),
 
-  query: publicProcedure
+  query: prototypeProcedure
     .input(
       z.object({
         exerciseId: z.number(),
@@ -77,7 +87,7 @@ const telemetryRouter = router({
 
 // Audit router
 const auditRouter = router({
-  query: publicProcedure
+  query: prototypeProcedure
     .input(
       z.object({
         exerciseId: z.number().optional(),
@@ -91,18 +101,18 @@ const auditRouter = router({
       return [];
     }),
 
-  verify: publicProcedure.query(async () => {
+  verify: prototypeProcedure.query(async () => {
     return { valid: true, entries: 0 };
   }),
 });
 
 // Mesh router
 const meshRouter = router({
-  nodes: publicProcedure.query(async () => {
+  nodes: prototypeProcedure.query(async () => {
     return [];
   }),
 
-  register: publicProcedure
+  register: prototypeProcedure
     .input(
       z.object({
         nodeType: z.enum(['COMMAND_NODE', 'SENSOR', 'TARGET', 'REDIRECTOR', 'GATEWAY']),
