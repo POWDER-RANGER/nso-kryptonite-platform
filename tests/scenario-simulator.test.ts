@@ -31,6 +31,17 @@ describe('safe range simulator', () => {
     expect(session.blueScore).toBe(20);
   });
 
+  it('scores a detection submission separately from triage', () => {
+    let session = createRangeSession({ name: 'test', scenarioId: 'identity-anomaly', mode: 'TRAINING' });
+    session = performRangeAction(session, 'ADVANCE_SCENARIO');
+    session = performRangeAction(session, 'ADVANCE_SCENARIO');
+    session = performRangeAction(session, 'INVESTIGATE', 'Correlated identity events with the endpoint alert.');
+    expect(() => performRangeAction(session, 'SUBMIT_DETECTION', 'Looks suspicious.')).toThrow('match condition');
+    session = performRangeAction(session, 'SUBMIT_DETECTION', 'Sigma detection: when source is Windows and event ID matches baseline anomaly, create alert.');
+    expect(session.blueScore).toBe(35);
+    expect(session.objectives.find((item) => item.id === 'blue-detection')?.complete).toBe(true);
+  });
+
   it('allows post-scenario recovery validation before finishing', () => {
     let session = createRangeSession({ name: 'test', scenarioId: 'identity-anomaly', mode: 'TRAINING' });
     for (let i = 0; i < 4; i += 1) session = performRangeAction(session, 'ADVANCE_SCENARIO');
