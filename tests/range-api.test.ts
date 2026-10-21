@@ -1,5 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { app } from '../api/app';
+
+const originalStorage = process.env.RANGE_STORAGE;
+const originalRender = process.env.RENDER;
+beforeAll(() => {
+  process.env.RANGE_STORAGE = 'memory';
+  delete process.env.RENDER;
+});
+afterAll(() => {
+  if (originalStorage === undefined) delete process.env.RANGE_STORAGE;
+  else process.env.RANGE_STORAGE = originalStorage;
+  if (originalRender === undefined) delete process.env.RENDER;
+  else process.env.RENDER = originalRender;
+});
 
 async function postAction(id: string, action: string, note?: string) {
   return app.request('/api/v1/range/sessions/' + id + '/actions', {
