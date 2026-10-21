@@ -20,10 +20,9 @@ export function isProductionLike(env: NodeJS.ProcessEnv = process.env): boolean 
 
 /** Production deployments need three distinct, high-entropy, operator-role tokens. */
 export function isRangeAuthConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
-  return Object.values(roleEnvironment).every((name) => {
-    const value = env[name];
-    return typeof value === 'string' && value.length >= 32;
-  });
+  const values = Object.values(roleEnvironment).map((name) => env[name]);
+  return values.every((value) => typeof value === 'string' && value.length >= 32) &&
+    new Set(values).size === values.length;
 }
 
 function constantTimeMatch(candidate: string, configured: string): boolean {
