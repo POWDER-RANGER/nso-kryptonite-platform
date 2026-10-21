@@ -28,7 +28,16 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard. Session data currently lives only in the API process.
+Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard.
+
+By default, sessions are held in memory and disappear when the API restarts. For optional MySQL persistence, copy `.env.example` to `.env`, configure `DATABASE_URL` for a database you control, set `RANGE_STORAGE=mysql`, and run:
+
+```bash
+npm run db:push
+npm run dev
+```
+
+The session API is deliberately disabled in production-like environments until operator authentication and authorization are implemented. Do not expose this prototype as a public multiplayer service.
 
 ## ⚔️ Four Modes of Operation
 
