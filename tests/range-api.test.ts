@@ -48,6 +48,14 @@ describe('synthetic range REST API', () => {
     expect(scenarios.data).toHaveLength(3);
     expect(scenarios.data.every((scenario) => scenario.source === 'BUILT_IN_SYNTHETIC')).toBe(true);
 
+    const fixturesResponse = await app.request('/api/v1/range/scenarios/identity-anomaly/fixtures');
+    expect(fixturesResponse.status).toBe(200);
+    const fixtures = await fixturesResponse.json() as { data: Array<{stage:number;source:string;severity:string;title:string}> };
+    expect(fixtures.data).toHaveLength(4);
+    expect(fixtures.data[1]).toMatchObject({ stage: 2, severity: 'MEDIUM' });
+    expect(fixtures.data.every((fixture) => !('positiveStages' in fixture))).toBe(true);
+    expect((await app.request('/api/v1/range/scenarios/no-such-scenario/fixtures')).status).toBe(404);
+
     const created = await createSession('TRAINING');
     expect(created.currentTurn).toBeNull();
     const response = await app.request('/api/v1/range/sessions/' + created.id);
