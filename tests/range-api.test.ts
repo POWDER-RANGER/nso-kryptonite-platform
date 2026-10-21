@@ -3,8 +3,10 @@ import { app } from '../api/app';
 
 const originalStorage = process.env.RANGE_STORAGE;
 const originalRender = process.env.RENDER;
+const originalNodeEnv = process.env.NODE_ENV;
 beforeAll(() => {
   process.env.RANGE_STORAGE = 'memory';
+  process.env.NODE_ENV = 'test';
   delete process.env.RENDER;
 });
 afterAll(() => {
@@ -12,6 +14,8 @@ afterAll(() => {
   else process.env.RANGE_STORAGE = originalStorage;
   if (originalRender === undefined) delete process.env.RENDER;
   else process.env.RENDER = originalRender;
+  if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+  else process.env.NODE_ENV = originalNodeEnv;
 });
 
 async function postAction(id: string, action: string, note?: string) {
