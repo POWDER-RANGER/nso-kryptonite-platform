@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ClipboardCheck, Shield, Target, Clock } from 'lucide-react';
+import { ClipboardCheck, Shield, Target, Clock, Download } from 'lucide-react';
 import { rangeAuthHeaders } from '@/lib/range-api';
 
 interface Summary { id:string; name:string; scenarioId:string; mode:string; status:string; createdAt:string; redScore:number; blueScore:number; stage:number; eventCount:number }
@@ -35,6 +35,25 @@ export function DebriefRoom() {
       window.removeEventListener('range-access-changed', loadSessions);
     };
   },[]);
+  function exportSession() {
+    if (!detail) return;
+    const report = {
+      exportedAt: new Date().toISOString(),
+      product: 'NSO Kryptonite synthetic cyber range',
+      disclaimer: 'Contains synthetic training events only; not real sensor or incident evidence.',
+      session: detail,
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `nso-kryptonite-debrief-${detail.id}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   useEffect(()=>{
     if(!selectedId){setDetail(null);return;}
     fetchJson<Detail>('/api/v1/range/sessions/'+selectedId).then(setDetail).catch((e)=>setError(e instanceof Error?e.message:'Unable to load session'));
@@ -43,7 +62,7 @@ export function DebriefRoom() {
   return <div className="max-w-5xl mx-auto space-y-6">
     <header><p className="text-xs uppercase tracking-[0.25em] text-red-500">Sanctuary / after-action review</p><h1 className="text-3xl font-bold mt-2">Debrief Room</h1><p className="text-muted-foreground mt-2">Session-linked scores, objectives, synthetic event timeline, and operator notes. No live sensor claims.</p></header>
     {error&&<p role="alert" className="text-sm text-red-400">{error}</p>}
-    <section className="panel p-4"><label className="block text-sm font-medium">Select session<select value={selectedId} onChange={e=>setSelectedId(e.target.value)} className="block mt-1 w-full bg-background border border-border p-2"><option value="">No session selected</option>{sessions.map(s=><option key={s.id} value={s.id}>{s.name} — {s.mode.replaceAll('_',' ')} — {s.status}</option>)}</select></label>{!sessions.length&&!error&&<p className="text-sm text-muted-foreground mt-3">No range sessions yet. Create an exercise to populate this report.</p>}</section>
+    <section className="panel p-4"><div className="flex flex-wrap items-end gap-3"><label className="block min-w-56 flex-1 text-sm font-medium">Select session<select value={selectedId} onChange={e=>setSelectedId(e.target.value)} className="block mt-1 w-full bg-background border border-border p-2"><option value="">No session selected</option>{sessions.map(s=><option key={s.id} value={s.id}>{s.name} — {s.mode.replaceAll('_',' ')} — {s.status}</option>)}</select></label><button type="button" onClick={exportSession} disabled={!detail} className="inline-flex items-center gap-2 border border-border px-3 py-2 text-sm disabled:opacity-40"><Download className="h-4 w-4"/>Export JSON</button></div>{!sessions.length&&!error&&<p className="text-sm text-muted-foreground mt-3">No range sessions yet. Create an exercise to populate this report.</p>}</section>
     {detail&&<>
       <div className="grid md:grid-cols-3 gap-4">
         <div className="panel p-4"><div className="flex gap-2 items-center text-sm"><Target className="w-4 h-4 text-red-400"/>Red score</div><p className="text-3xl font-bold mt-2">{detail.redScore}</p><p className="text-xs text-muted-foreground">10 points per synthetic stage revealed</p></div>
