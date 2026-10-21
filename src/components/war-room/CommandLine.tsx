@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Terminal, ChevronRight } from 'lucide-react';
+import { rangeAuthHeaders } from '@/lib/range-api';
 
 interface ScenarioSummary { id: string; name: string; stageCount: number }
 interface SessionSummary { id: string; name: string; mode: string; status: string; redScore: number; blueScore: number; stage: number; eventCount: number }
@@ -22,7 +23,7 @@ export function CommandLine() {
   const say = (...lines: string[]) => setHistory((prev) => [...prev, ...lines]);
 
   async function readJson<T>(url: string): Promise<T> {
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: rangeAuthHeaders() });
     const body = await response.json() as T & { error?: string };
     if (!response.ok) throw new Error(body.error || `Request failed: HTTP ${response.status}`);
     return body;
