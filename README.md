@@ -9,15 +9,26 @@
 
 <br>
 
-![](https://img.shields.io/badge/PLATFORM-ONLINE-FF1744?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/RANGE-PROTOTYPE-FF1744?style=for-the-badge&labelColor=0D1117)
 ![](https://img.shields.io/badge/LICENSE-AGPL--3.0-FF9100?style=for-the-badge&labelColor=0D1117)
-![](https://img.shields.io/badge/RED_TEAM-Weaponized-B71C1C?style=for-the-badge&labelColor=0D1117)
-![](https://img.shields.io/badge/BLUE_TEAM-Hardened-2979FF?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/RED_TEAM-Simulated-B71C1C?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/BLUE_TEAM-Training-2979FF?style=for-the-badge&labelColor=0D1117)
 ![](https://img.shields.io/badge/PURPLE_TEAM-Fusion-7C4DFF?style=for-the-badge&labelColor=0D1117)
 
 </div>
 
 ---
+
+## Run the current synthetic range
+
+Requires Node.js 20 or newer. The initial training slice does not require a database service:
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard. Session data currently lives only in the API process.
 
 ## ⚔️ Four Modes of Operation
 
