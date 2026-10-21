@@ -304,7 +304,8 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     if (next.notes.length < 100) next.notes.push('Blue turn ended. Red may advance the next scenario stage.');
   } else if (action === 'FINISH') {
     const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
-    if (next.stage < scenario.stages.length) throw new Error('Reveal all scenario stages before finishing');
+    if (next.mode !== 'TESTING' && next.stage < scenario.stages.length) throw new Error('Reveal all scenario stages before finishing');
+    if (next.mode === 'TESTING' && next.detectionTests.length === 0) throw new Error('Run at least one detection test before finishing');
     if (next.mode === 'OPERATOR_VS_OPERATOR' && next.currentTurn === 'BLUE') throw new Error('Blue must end the current turn before finishing');
     next.status = 'COMPLETED';
     if (next.notes.length < 100) next.notes.push('Session completed by the operator. Review the scorecard and evidence during debrief.');
