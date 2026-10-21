@@ -11,7 +11,7 @@
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
-    "start": "node dist/server.js",
+    "start": "node dist/api/boot.js",
     "check": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -59,7 +59,8 @@
     "recharts": "^2.13.0",
     "three": "^0.170.0",
     "@react-three/fiber": "^8.17.0",
-    "@trpc/react-query": "^11.0.0"
+    "@trpc/react-query": "^11.0.0",
+    "@hono/node-server": "^1.13.8"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
