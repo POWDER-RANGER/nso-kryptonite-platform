@@ -136,7 +136,7 @@ const rangeProcedure = publicProcedure.use(({ next }) => {
 const rangeRouter = router({
   scenarios: publicProcedure.query(() => listScenarios()),
 
-  sessions: rangeProcedure.query(() =>
+  sessions: rangeProcedure.query(async () =>
     (await listRangeSessions()).map((session) => ({
       id: session.id,
       name: session.name,
