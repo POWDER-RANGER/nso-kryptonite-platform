@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Activity, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { rangeAuthHeaders } from '@/lib/range-api';
 
 interface RangeSummary { id: string; name: string; mode: string; status: string }
 interface Event { id: string; source: string; title: string; timestamp: string; severity: 'INFO'|'LOW'|'MEDIUM'|'HIGH'; stage: number }
 interface SessionDetail { events: Event[]; name: string }
 async function loadEvents(): Promise<Event[]> {
-  const listResponse = await fetch('/api/v1/range/sessions');
+  const listResponse = await fetch('/api/v1/range/sessions', { headers: rangeAuthHeaders() });
   if (!listResponse.ok) throw new Error('Range API unavailable');
   const listBody = await listResponse.json() as {data: RangeSummary[]};
   const active = listBody.data.slice(0, 8);
   const details = await Promise.all(active.map(async (session) => {
-    const response = await fetch('/api/v1/range/sessions/' + session.id);
+    const response = await fetch('/api/v1/range/sessions/' + session.id, { headers: rangeAuthHeaders() });
     if (!response.ok) return [] as Event[];
     const body = await response.json() as {data: SessionDetail};
     return body.data.events;
