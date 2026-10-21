@@ -5,7 +5,7 @@
  * exploit, authenticate to, or send traffic to any external system.
  */
 
-export type RangeMode = 'TRAINING' | 'OPERATOR_VS_OPERATOR';
+export type RangeMode = 'TESTING' | 'TRAINING' | 'OPERATOR_VS_OPERATOR';
 export type RangeTeam = 'RED' | 'BLUE';
 export type RangeAction = 'ADVANCE_SCENARIO' | 'INVESTIGATE' | 'CONTAIN' | 'SUBMIT_DETECTION' | 'END_TURN' | 'FINISH';
 
@@ -28,6 +28,20 @@ export interface RangeObjective {
   complete: boolean;
 }
 
+export interface DetectionTestResult {
+  id: string;
+  timestamp: string;
+  ruleText: string;
+  matchedStages: number[];
+  truePositives: number;
+  falsePositives: number;
+  falseNegatives: number;
+  precision: number;
+  recall: number;
+  passed: boolean;
+  error?: string;
+}
+
 export interface RangeSession {
   id: string;
   name: string;
@@ -41,12 +55,14 @@ export interface RangeSession {
   blueScore: number;
   events: RangeEvent[];
   objectives: RangeObjective[];
+  detectionTests: DetectionTestResult[];
   notes: string[];
 }
 
 const SCENARIOS = [
   {
     id: 'identity-anomaly',
+    positiveStages: [2, 3],
     name: 'Identity Anomaly',
     description: 'Synthetic Windows identity telemetry with an anomalous authentication pattern.',
     stages: [
@@ -58,6 +74,7 @@ const SCENARIOS = [
   },
   {
     id: 'wireless-baseline',
+    positiveStages: [2, 3],
     name: 'Wireless Baseline Drift',
     description: 'Synthetic wireless inventory and signal observations; no radio transmission or scanning.',
     stages: [
@@ -69,6 +86,7 @@ const SCENARIOS = [
   },
   {
     id: 'protocol-anomaly',
+    positiveStages: [2, 3],
     name: 'Protocol Anomaly Triage',
     description: 'Synthetic network and DNS logs for defensive triage.',
     stages: [
@@ -102,10 +120,11 @@ export function createRangeSession(input: { name: string; scenarioId: string; mo
     redScore: 0,
     blueScore: 0,
     events: [],
+    detectionTests: [],
     objectives: [
       { id: 'red-progress', label: 'Reveal all 4 synthetic stages (10 points per stage)', team: 'RED', points: 40, complete: false },
       { id: 'blue-triage', label: 'Identify and explain the anomaly', team: 'BLUE', points: 20, complete: false },
-      { id: 'blue-detection', label: 'Submit a detection condition tied to telemetry', team: 'BLUE', points: 15, complete: false },
+      { id: 'blue-detection', label: 'Submit a detection rationale or pass a rule test', team: 'BLUE', points: 15, complete: false },
       { id: 'blue-contain', label: 'Record a justified containment decision', team: 'BLUE', points: 15, complete: false },
       { id: 'blue-recover', label: 'Validate recovery evidence', team: 'BLUE', points: 15, complete: false },
     ],
@@ -126,6 +145,7 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
   const next: RangeSession = {
     ...session,
     events: [...session.events],
+    detectionTests: [...(session.detectionTests ?? [])],
     objectives: session.objectives.map((objective) => ({ ...objective })),
     notes: [...session.notes],
   };
