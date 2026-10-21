@@ -15,7 +15,6 @@ export function saveRangeAccess(role: RangeOperatorRole, token: string): void {
   if (typeof window === 'undefined') return;
   window.sessionStorage.setItem(ROLE_KEY, role);
   if (token.trim()) window.sessionStorage.setItem(TOKEN_KEY, token.trim());
-  else window.sessionStorage.removeItem(TOKEN_KEY);
   window.dispatchEvent(new Event('range-access-changed'));
 }
 export function clearRangeAccess(): void {
