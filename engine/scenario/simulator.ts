@@ -104,6 +104,18 @@ export function listScenarios() {
   }));
 }
 
+export function getScenarioFixtures(scenarioId: string) {
+  const scenario = SCENARIOS.find((item) => item.id === scenarioId);
+  if (!scenario) throw new Error('Unknown scenario');
+  return scenario.stages.map((stage, index) => ({
+    stage: index + 1,
+    source: stage.source,
+    severity: stage.severity,
+    title: stage.title,
+    detail: stage.detail,
+  }));
+}
+
 export function evaluateDetectionRule(scenarioId: string, ruleText: string, now = new Date()): DetectionTestResult {
   const scenario = SCENARIOS.find((item) => item.id === scenarioId);
   if (!scenario) throw new Error('Unknown scenario');
