@@ -7,7 +7,7 @@
 
 export type RangeMode = 'TRAINING' | 'OPERATOR_VS_OPERATOR';
 export type RangeTeam = 'RED' | 'BLUE';
-export type RangeAction = 'ADVANCE_SCENARIO' | 'INVESTIGATE' | 'CONTAIN' | 'SUBMIT_DETECTION' | 'FINISH';
+export type RangeAction = 'ADVANCE_SCENARIO' | 'INVESTIGATE' | 'CONTAIN' | 'SUBMIT_DETECTION' | 'END_TURN' | 'FINISH';
 
 export interface RangeEvent {
   id: string;
@@ -36,6 +36,7 @@ export interface RangeSession {
   status: 'ACTIVE' | 'COMPLETED' | 'ABORTED';
   createdAt: string;
   stage: number;
+  currentTurn: RangeTeam | null;
   redScore: number;
   blueScore: number;
   events: RangeEvent[];
@@ -97,6 +98,7 @@ export function createRangeSession(input: { name: string; scenarioId: string; mo
     status: 'ACTIVE',
     createdAt: now.toISOString(),
     stage: 0,
+    currentTurn: input.mode === 'OPERATOR_VS_OPERATOR' ? 'RED' : null,
     redScore: 0,
     blueScore: 0,
     events: [],
@@ -125,6 +127,17 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     notes: [...session.notes],
   };
   const objective = (id: string) => next.objectives.find((item) => item.id === id)!;
+  if (session.mode === 'OPERATOR_VS_OPERATOR') {
+    if (action === 'ADVANCE_SCENARIO' && session.currentTurn !== 'RED') {
+      throw new Error('Red must wait until Blue ends the turn.');
+    }
+    if (['INVESTIGATE', 'CONTAIN', 'SUBMIT_DETECTION'].includes(action) && session.currentTurn !== 'BLUE') {
+      throw new Error('Blue actions are only allowed during the Blue turn.');
+    }
+    if (action === 'END_TURN' && session.currentTurn !== 'BLUE') {
+      throw new Error('Only Blue can end the active Blue turn.');
+    }
+  }
   const award = (id: string) => {
     const item = objective(id);
     if (!item.complete) {
@@ -149,6 +162,7 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
       stage: next.stage + 1,
     });
     next.stage += 1;
+    if (next.mode === 'OPERATOR_VS_OPERATOR') next.currentTurn = 'BLUE';
     next.redScore += 10;
     objective('red-progress').complete = true;
     // Keep the session open for investigation and recovery validation after the last event.
@@ -177,9 +191,16 @@ export function performRangeAction(session: RangeSession, action: RangeAction, n
     }
     next.notes.push(`BLUE DETECTION SUBMISSION: ${detection}`);
     if (next.events.some((event) => event.severity === 'MEDIUM' || event.severity === 'HIGH')) award('blue-detection');
+  } else if (action === 'END_TURN') {
+    if (next.mode !== 'OPERATOR_VS_OPERATOR' || next.currentTurn !== 'BLUE') {
+      throw new Error('End turn is only available during an operator-vs-operator Blue turn.');
+    }
+    next.currentTurn = 'RED';
+    next.notes.push('Blue turn ended. Red may advance the next scenario stage.');
   } else if (action === 'FINISH') {
     const scenario = SCENARIOS.find((item) => item.id === next.scenarioId)!;
     if (next.stage < scenario.stages.length) throw new Error('Reveal all scenario stages before finishing');
+    if (next.mode === 'OPERATOR_VS_OPERATOR' && next.currentTurn === 'BLUE') throw new Error('Blue must end the current turn before finishing');
     next.status = 'COMPLETED';
     next.notes.push('Session completed by the operator. Review the scorecard and evidence during debrief.');
   }
