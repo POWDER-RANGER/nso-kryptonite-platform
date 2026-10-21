@@ -37,6 +37,6 @@ RUN addgroup -g 1001 -S kryptonite && \
     adduser -S kryptonite -u 1001
 USER kryptonite
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["node", "dist/server.js"]
