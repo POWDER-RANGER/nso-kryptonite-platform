@@ -1,16 +1,17 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Terminal, ChevronRight } from 'lucide-react';
+
+interface ScenarioSummary { id: string; name: string; stageCount: number }
+interface SessionSummary { id: string; name: string; mode: string; status: string; redScore: number; blueScore: number; stage: number; eventCount: number }
 
 export function CommandLine() {
   const [history, setHistory] = useState<string[]>([
-    '> healthcheck',
-    'Mesh: 12/12 nodes online',
-    'Telemetry: Zeek ✓ | EDR ✓ | DNS ✓ | NetFlow ✓',
-    'Token: Valid, expires in 47s',
-    'Scope: 192.168.10.0/24, Techniques: T1003-T1059',
-    'Kill-switch: Armed, biometric confirmed',
+    'NSO KRYPTONITE // SYNTHETIC RANGE TERMINAL',
+    'No live network actions, mesh status, or external sensors are connected.',
+    'Type help to list the commands available in this build.',
   ]);
   const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -18,56 +19,99 @@ export function CommandLine() {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [history]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const say = (...lines: string[]) => setHistory((prev) => [...prev, ...lines]);
+
+  async function readJson<T>(url: string): Promise<T> {
+    const response = await fetch(url);
+    const body = await response.json() as T & { error?: string };
+    if (!response.ok) throw new Error(body.error || `Request failed: HTTP ${response.status}`);
+    return body;
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-
-    setHistory((prev) => [...prev, `> ${input}`]);
-
-    // Simple command responses
     const cmd = input.toLowerCase().trim();
-    if (cmd === 'help') {
-      setHistory((prev) => [
-        ...prev,
-        'Available commands:',
-        '  help        Show this help message',
-        '  status      Show current status',
-        '  healthcheck Run system health check',
-        '  scope       Show authorization scope',
-        '  mesh        Show mesh node status',
-        '  mode        Switch runtime mode',
-        '  deploy      Deploy payload (WEAPON mode)',
-        '  hunt        Run detection query (SHIELD mode)',
-        '  clear       Clear terminal',
-      ]);
-    } else if (cmd === 'clear') {
+    if (!cmd || busy) return;
+    setHistory((prev) => [...prev, `> ${cmd}`]);
+    setInput('');
+
+    if (cmd === 'clear') {
       setHistory([]);
-    } else if (cmd === 'status') {
-      setHistory((prev) => [
-        ...prev,
-        'Mode: WEAPON',
-        'Exercise: tier-1-ad-basics',
-        'Scope: 192.168.10.0/24',
-        'Token: Valid (expires in 43s)',
-      ]);
-    } else {
-      setHistory((prev) => [...prev, `Command not found: ${input}`]);
+      return;
+    }
+    if (cmd === 'help') {
+      say(
+        'Available commands:',
+        '  help         List supported commands',
+        '  status       Check the API and session store availability',
+        '  healthcheck  Check API health and scenario catalogue',
+        '  scenarios    List available synthetic scenarios',
+        '  sessions     List saved range sessions and scores',
+        '  scope        Show the current safety boundary',
+        '  mesh         Report whether a real mesh is connected',
+        '  clear        Clear terminal output',
+        'Unsupported commands do not trigger an operation.',
+      );
+      return;
+    }
+    if (cmd === 'scope') {
+      say(
+        'Scope: BUILT-IN SYNTHETIC SCENARIOS ONLY',
+        'Live targets: none | External network actions: disabled',
+        'Wireless transmission: disabled | Credential collection: disabled',
+      );
+      return;
+    }
+    if (cmd === 'mesh') {
+      say('Mesh: NOT CONNECTED', 'No real nodes or WireGuard peers are registered by this synthetic range slice.');
+      return;
+    }
+    if (!['status', 'healthcheck', 'scenarios', 'sessions'].includes(cmd)) {
+      say(`Command not implemented: ${cmd}`, 'No operation was sent. Use help for supported commands.');
+      return;
     }
 
-    setInput('');
+    setBusy(true);
+    try {
+      if (cmd === 'status') {
+        const health = await readJson<{ status: string; version: string }>('/health');
+        say(`API: ${health.status.toUpperCase()} (version ${health.version})`);
+        try {
+          const body = await readJson<{ data: SessionSummary[] }>('/api/v1/range/sessions');
+          say(`Range session store: available; ${body.data.length} session(s) listed.`);
+        } catch (error) {
+          say(`Range session store: unavailable — ${error instanceof Error ? error.message : 'request failed'}`);
+        }
+      } else if (cmd === 'healthcheck') {
+        const health = await readJson<{ status: string; version: string }>('/health');
+        const scenarios = await readJson<{ data: ScenarioSummary[] }>('/api/v1/range/scenarios');
+        say(`API health: ${health.status.toUpperCase()} (version ${health.version})`);
+        say(`Scenario catalogue: ${scenarios.data.length} built-in synthetic scenario(s).`);
+        say('Database, authentication, mesh, and real sensors are not inferred from this health response.');
+      } else if (cmd === 'scenarios') {
+        const body = await readJson<{ data: ScenarioSummary[] }>('/api/v1/range/scenarios');
+        say(...body.data.map((scenario) => `${scenario.id} — ${scenario.name} (${scenario.stageCount} stages)`));
+      } else if (cmd === 'sessions') {
+        const body = await readJson<{ data: SessionSummary[] }>('/api/v1/range/sessions');
+        if (!body.data.length) say('No saved range sessions. Create one from Training Range.');
+        else say(...body.data.map((session) => `${session.name} | ${session.mode} | ${session.status} | Red ${session.redScore} : Blue ${session.blueScore} | stage ${session.stage}`));
+      }
+    } catch (error) {
+      say(`Command failed: ${error instanceof Error ? error.message : 'unknown error'}`);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <div className="command-line">
       <div className="flex items-center gap-2 mb-2 text-muted-foreground">
         <Terminal className="w-4 h-4" />
-        <span className="text-xs">Command Line Interface</span>
+        <span className="text-xs">Range CLI / read-only diagnostics</span>
       </div>
-      <div className="h-32 overflow-auto font-mono text-xs space-y-0.5">
+      <div className="h-36 overflow-auto font-mono text-xs space-y-0.5" aria-live="polite">
         {history.map((line, i) => (
-          <div key={i} className={line.startsWith('>') ? 'text-yellow-400' : 'text-green-400/70'}>
-            {line}
-          </div>
+          <div key={i} className={line.startsWith('>') ? 'text-yellow-400' : 'text-green-400/70'}>{line}</div>
         ))}
         <div ref={endRef} />
       </div>
@@ -79,9 +123,11 @@ export function CommandLine() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           className="flex-1 bg-transparent text-yellow-400 outline-none text-xs"
-          placeholder="Enter command..."
+          placeholder={busy ? 'Checking…' : 'Enter a supported command…'}
           autoComplete="off"
           spellCheck={false}
+          disabled={busy}
+          aria-label="Range diagnostic command"
         />
       </form>
     </div>
