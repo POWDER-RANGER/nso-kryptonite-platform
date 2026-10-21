@@ -19,6 +19,17 @@
 
 ---
 
+## Run the current synthetic range
+
+Requires Node.js 20 or newer. The initial training slice does not require a database service:
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard. Session data currently lives only in the API process.
+
 ## ⚔️ Four Modes of Operation
 
 | Mode | Function | Access |
