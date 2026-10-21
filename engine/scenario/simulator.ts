@@ -104,6 +104,80 @@ export function listScenarios() {
   }));
 }
 
+export function evaluateDetectionRule(scenarioId: string, ruleText: string, now = new Date()): DetectionTestResult {
+  const scenario = SCENARIOS.find((item) => item.id === scenarioId);
+  if (!scenario) throw new Error('Unknown scenario');
+  const conditions = ruleText.split(/[;\n]+/).map((part) => part.trim()).filter(Boolean);
+  const allowedSources = ['WINDOWS', 'DNS', 'EDR', 'NETWORK'];
+  const allowedSeverities = ['INFO', 'LOW', 'MEDIUM', 'HIGH'];
+  let sources: string[] | undefined;
+  let severities: string[] | undefined;
+  let terms: string[] | undefined;
+  let error: string | undefined;
+
+  if (conditions.length === 0) error = 'Add at least one condition such as source=EDR or severity=HIGH.';
+  for (const condition of conditions) {
+    const match = /^(source|severity|contains)\s*[:=]\s*(.+)$/i.exec(condition);
+    if (!match) {
+      error = 'Use source=..., severity=..., or contains=... conditions separated by semicolons.';
+      break;
+    }
+    const key = match[1].toLowerCase();
+    const values = match[2].split(',').map((value) => value.trim()).filter(Boolean);
+    if (values.length === 0) {
+      error = 'Detection condition values cannot be empty.';
+      break;
+    }
+    if (key === 'source') {
+      const normalized = values.map((value) => value.toUpperCase());
+      if (normalized.some((value) => !allowedSources.includes(value))) {
+        error = 'Unknown source. Use WINDOWS, DNS, EDR, or NETWORK.';
+        break;
+      }
+      sources = normalized;
+    } else if (key === 'severity') {
+      const normalized = values.map((value) => value.toUpperCase());
+      if (normalized.some((value) => !allowedSeverities.includes(value))) {
+        error = 'Unknown severity. Use INFO, LOW, MEDIUM, or HIGH.';
+        break;
+      }
+      severities = normalized;
+    } else {
+      terms = values.map((value) => value.toLocaleLowerCase());
+    }
+  }
+
+  const positives = new Set<number>(scenario.positiveStages);
+  const matchedStages = error ? [] : scenario.stages.flatMap((stage, index) => {
+    const stageNumber = index + 1;
+    const sourceMatches = !sources || sources.includes(stage.source.toUpperCase());
+    const severityMatches = !severities || severities.includes(stage.severity.toUpperCase());
+    const haystack = (stage.title + ' ' + stage.detail + ' ' + stage.source).toLocaleLowerCase();
+    const textMatches = !terms || terms.some((term) => haystack.includes(term));
+    return sourceMatches && severityMatches && textMatches ? [stageNumber] : [];
+  });
+  const truePositives = matchedStages.filter((stage) => positives.has(stage)).length;
+  const falsePositives = matchedStages.length - truePositives;
+  const falseNegatives = positives.size - truePositives;
+  const precision = matchedStages.length ? truePositives / matchedStages.length : 0;
+  const recall = positives.size ? truePositives / positives.size : 0;
+  const passed = !error && truePositives > 0 && falsePositives === 0 && falseNegatives === 0;
+
+  return {
+    id: crypto.randomUUID(),
+    timestamp: now.toISOString(),
+    ruleText: ruleText.slice(0, 500),
+    matchedStages,
+    truePositives,
+    falsePositives,
+    falseNegatives,
+    precision,
+    recall,
+    passed,
+    ...(error ? { error } : {}),
+  };
+}
+
 export function createRangeSession(input: { name: string; scenarioId: string; mode: RangeMode; now?: Date }): RangeSession {
   const scenario = SCENARIOS.find((item) => item.id === input.scenarioId);
   if (!scenario) throw new Error('Unknown scenario');
