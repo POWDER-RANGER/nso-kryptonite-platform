@@ -28,7 +28,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard. Session data currently lives only in the API process.
+Open `http://localhost:3000`, choose **Training Range**, create an exercise, and advance the scenario to generate its pre-authored telemetry. Use the investigation, detection, and containment forms to practice evidence-based response, then finish the exercise to lock the scorecard. In operator-vs-operator mode, Red advances one stage, control passes to Blue for defensive actions, and **End Blue turn** returns control to Red. A completed match displays the score-based winner. Session data currently lives only in the API process.
 
 ## ⚔️ Four Modes of Operation
 
