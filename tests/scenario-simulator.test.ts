@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abortRangeSession, createRangeSession, evaluateDetectionRule, listScenarios, performRangeAction } from '../engine/scenario/simulator';
+import { abortRangeSession, createRangeSession, evaluateDetectionRule, getScenarioFixtures, listScenarios, performRangeAction } from '../engine/scenario/simulator';
 
 describe('safe range simulator', () => {
   it('lists only built-in synthetic scenarios', () => {
@@ -72,6 +72,29 @@ describe('safe range simulator', () => {
     session = performRangeAction(session, 'SUBMIT_DETECTION', 'Sigma detection: when source is Windows and event ID matches baseline anomaly, create alert.');
     expect(session.blueScore).toBe(35);
     expect(session.objectives.find((item) => item.id === 'blue-detection')?.complete).toBe(true);
+  });
+
+  it('ships distinct, unlabeled four-stage fixtures for each supported domain', () => {
+    const identity = getScenarioFixtures('identity-anomaly');
+    const wireless = getScenarioFixtures('wireless-baseline');
+    const protocol = getScenarioFixtures('protocol-anomaly');
+    expect(identity).toHaveLength(4);
+    expect(wireless).toHaveLength(4);
+    expect(protocol).toHaveLength(4);
+    expect(identity[0]).toMatchObject({ stage: 1, source: 'WINDOWS', severity: 'INFO' });
+    expect(wireless[1]).toMatchObject({ stage: 2, source: 'NETWORK', severity: 'MEDIUM' });
+    expect(protocol[2]).toMatchObject({ stage: 3, source: 'NETWORK', severity: 'HIGH' });
+    expect(() => getScenarioFixtures('unknown')).toThrow('Unknown scenario');
+  });
+
+  it('can evaluate a precise rule across all three fixture packs', () => {
+    const identity = evaluateDetectionRule('identity-anomaly', 'source=WINDOWS,EDR;severity=MEDIUM,HIGH');
+    const wireless = evaluateDetectionRule('wireless-baseline', 'source=NETWORK,DNS;severity=MEDIUM,LOW');
+    const protocol = evaluateDetectionRule('protocol-anomaly', 'source=DNS,NETWORK;severity=MEDIUM,HIGH');
+    expect(identity.passed).toBe(true);
+    expect(wireless.passed).toBe(true);
+    expect(protocol.passed).toBe(true);
+    expect([identity.truePositives, wireless.truePositives, protocol.truePositives]).toEqual([2, 2, 2]);
   });
 
   it('evaluates simple detection rules against labeled synthetic stages', () => {
