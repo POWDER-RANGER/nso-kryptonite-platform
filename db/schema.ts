@@ -184,3 +184,17 @@ export const meshNodes = mysqlTable('mesh_nodes', {
   lastHeartbeat: timestamp('last_heartbeat'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+
+// --- Synthetic Cyber-Range Sessions ---
+// Stores the canonical session snapshot for training and turn-based competition.
+// This table contains synthetic range evidence only, not real sensor payloads.
+export const rangeSessions = mysqlTable('range_sessions', {
+  sessionId: varchar('session_id', { length: 36 }).primaryKey(),
+  mode: mysqlEnum('mode', ['TRAINING', 'OPERATOR_VS_OPERATOR']).notNull(),
+  status: mysqlEnum('status', ['ACTIVE', 'COMPLETED', 'ABORTED']).notNull(),
+  scenarioId: varchar('scenario_id', { length: 64 }).notNull(),
+  sessionData: json('session_data').$type<RangeSession>().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
