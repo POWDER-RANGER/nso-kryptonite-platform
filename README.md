@@ -19,6 +19,8 @@
 
 ---
 
+> **Current implementation status:** The executable slice is a synthetic cyber range for training and turn-based Red/Blue scoring. The remaining architecture and module descriptions below express design intent; they are not evidence that real payload systems, C2, RF tooling, AI services, sensors, or mesh operations are connected or production-ready. See [Implementation Status](docs/IMPLEMENTATION_STATUS.md) and the [Operator Guide](docs/OPERATOR.md).
+
 ## Run the current synthetic range
 
 Requires Node.js 20 or newer. The initial training slice does not require a database service:
