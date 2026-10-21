@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abortRangeSession, createRangeSession, listScenarios, performRangeAction } from '../engine/scenario/simulator';
+import { abortRangeSession, createRangeSession, evaluateDetectionRule, listScenarios, performRangeAction } from '../engine/scenario/simulator';
 
 describe('safe range simulator', () => {
   it('lists only built-in synthetic scenarios', () => {
@@ -72,6 +72,42 @@ describe('safe range simulator', () => {
     session = performRangeAction(session, 'SUBMIT_DETECTION', 'Sigma detection: when source is Windows and event ID matches baseline anomaly, create alert.');
     expect(session.blueScore).toBe(35);
     expect(session.objectives.find((item) => item.id === 'blue-detection')?.complete).toBe(true);
+  });
+
+  it('evaluates simple detection rules against labeled synthetic stages', () => {
+    const passing = evaluateDetectionRule(
+      'identity-anomaly',
+      'source=WINDOWS,EDR;severity=MEDIUM,HIGH',
+      new Date('2026-01-01T00:00:00.000Z'),
+    );
+    expect(passing.passed).toBe(true);
+    expect(passing.matchedStages).toEqual([2, 3]);
+    expect(passing.truePositives).toBe(2);
+    expect(passing.falsePositives).toBe(0);
+    expect(passing.falseNegatives).toBe(0);
+    expect(passing.precision).toBe(1);
+    expect(passing.recall).toBe(1);
+
+    const tooBroad = evaluateDetectionRule('identity-anomaly', 'source=WINDOWS;severity=INFO,MEDIUM');
+    expect(tooBroad.passed).toBe(false);
+    expect(tooBroad.falsePositives).toBe(1);
+    expect(tooBroad.falseNegatives).toBe(1);
+
+    const malformed = evaluateDetectionRule('identity-anomaly', 'process=unknown');
+    expect(malformed.passed).toBe(false);
+    expect(malformed.error).toContain('Use source');
+  });
+
+  it('lets a testing-mode operator score a passing rule and finish without revealing event stages', () => {
+    let session = createRangeSession({ name: 'Detection test', scenarioId: 'identity-anomaly', mode: 'TESTING' });
+    expect(session.stage).toBe(0);
+    expect(() => performRangeAction(session, 'FINISH')).toThrow('at least one detection test');
+    session = performRangeAction(session, 'SUBMIT_DETECTION', 'source=WINDOWS,EDR;severity=MEDIUM,HIGH');
+    expect(session.detectionTests[0].passed).toBe(true);
+    expect(session.blueScore).toBe(15);
+    expect(session.stage).toBe(0);
+    session = performRangeAction(session, 'FINISH');
+    expect(session.status).toBe('COMPLETED');
   });
 
   it('allows post-scenario recovery validation before finishing', () => {
