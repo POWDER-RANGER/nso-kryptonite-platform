@@ -38,6 +38,10 @@ async function createSession(mode: 'TRAINING' | 'OPERATOR_VS_OPERATOR') {
 
 describe('synthetic range REST API', () => {
   it('exposes only the three built-in scenarios and creates a retrievable session', async () => {
+    const statusResponse = await app.request('/api/v1/range/status');
+    expect(statusResponse.status).toBe(200);
+    expect((await statusResponse.json() as { data: { storageMode: string } }).data.storageMode).toBe('memory');
+
     const scenarioResponse = await app.request('/api/v1/range/scenarios');
     expect(scenarioResponse.status).toBe(200);
     const scenarios = await scenarioResponse.json() as { data: Array<{ id: string; source: string }> };
