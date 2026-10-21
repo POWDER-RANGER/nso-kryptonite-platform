@@ -39,7 +39,7 @@ All scenario records are synthetic and local to the application. No scenario act
 ## Suggested local verification
 
 ```bash
-npm ci
+npm install
 npm run check
 npm test
 npm run build
