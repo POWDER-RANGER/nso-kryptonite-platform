@@ -6,6 +6,8 @@
  * audit logging, telemetry, and detection rules.
  */
 
+import type { RangeSession } from '../engine/scenario/simulator';
+
 import {
   mysqlTable,
   serial,
