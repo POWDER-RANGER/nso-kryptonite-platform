@@ -80,7 +80,7 @@ app.post('/api/v1/range/sessions', async (c) => {
       return c.json({ error: 'Choose a supported synthetic scenario.' }, 400);
     }
     if (body.mode !== 'TESTING' && body.mode !== 'TRAINING' && body.mode !== 'OPERATOR_VS_OPERATOR') {
-      return c.json({ error: 'Mode must be TRAINING or OPERATOR_VS_OPERATOR.' }, 400);
+      return c.json({ error: 'Mode must be TESTING, TRAINING, or OPERATOR_VS_OPERATOR.' }, 400);
     }
     if ((await listRangeSessions()).length >= 100) {
       return c.json({ error: 'The range session limit has been reached.' }, 429);
