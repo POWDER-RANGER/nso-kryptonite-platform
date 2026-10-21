@@ -37,7 +37,7 @@ npm run db:push
 npm run dev
 ```
 
-The session API is deliberately disabled on production-like hosts until operator authentication and authorization are implemented. Do not expose this prototype as a public multiplayer service.
+Production-like REST sessions use separate `RANGE_RED_TOKEN`, `RANGE_BLUE_TOKEN`, and `RANGE_FACILITATOR_TOKEN` environment secrets, each randomly generated, distinct, and at least 32 characters long. Configure them in the hosting dashboard, never in source control. These shared role keys are a controlled-pilot boundary—not user accounts or MFA. MySQL persistence and deployed runtime still require verification. Do not expose this prototype as a public multiplayer service.
 
 ## ⚔️ Four Modes of Operation
 
