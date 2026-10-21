@@ -20,7 +20,7 @@ import {
   type RangeAction,
   type RangeMode,
 } from '../engine/scenario/simulator';
-import { getRangeSession, listRangeSessions, saveRangeSession } from './queries/range-store';
+import { getRangeSession, getRangeStorageMode, listRangeSessions, saveRangeSession } from './queries/range-store';
 import { authorizeRangeRequest } from './queries/range-auth';
 
 export const app = new Hono();
@@ -46,6 +46,7 @@ app.use(
 
 // Static scenario descriptions are public. Session operations require the appropriate role token in production.
 app.get('/api/v1/range/scenarios', (c) => c.json({ data: listScenarios() }));
+app.get('/api/v1/range/status', (c) => c.json({ data: { storageMode: getRangeStorageMode(), sessionApi: 'role-protected-on-production' } }));
 
 app.get('/api/v1/range/sessions', async (c) => {
   const authorization = authorizeRangeRequest(c.req.raw);
