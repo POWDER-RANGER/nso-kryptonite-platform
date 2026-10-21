@@ -124,7 +124,7 @@ const meshRouter = router({
 // Safe synthetic cyber range: training and operator-vs-operator scoring.
 // These procedures only generate pre-authored local events; they cannot target networks.
 const rangeProcedure = publicProcedure.use(({ next }) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER === 'true') {
     throw new TRPCError({
       code: 'FORBIDDEN',
       message: 'Range sessions are disabled in production until operator authorization is enforced.',
