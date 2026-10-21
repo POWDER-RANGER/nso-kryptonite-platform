@@ -10,8 +10,8 @@
     "dev:client": "vite",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
-    "build:server": "tsc -p tsconfig.server.json",
-    "start": "node dist/api/boot.js",
+    "build:server": "esbuild api/boot.ts --bundle --platform=node --target=node20 --format=esm --packages=external --outfile=dist/server.js",
+    "start": "node dist/server.js",
     "check": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -78,7 +78,8 @@
     "prettier": "^3.3.0",
     "concurrently": "^9.0.0",
     "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0"
+    "postcss": "^8.4.0",
+    "esbuild": "^0.24.2"
   },
   "engines": {
     "node": ">=20.0.0"
