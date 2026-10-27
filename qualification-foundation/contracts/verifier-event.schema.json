@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nsokryptonite.local/schemas/verifier-event.schema.json",
+  "title": "NK Independent Verifier Event",
+  "description": "Emitted by an independent verifier component, never by the executing module. This is the only event type permitted to carry result=cleanup_verified. verified_event_id must equal the module event's event_id it verifies.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "verifier_module_id",
+    "verified_event_id",
+    "exercise_id",
+    "operation_id",
+    "participant_id",
+    "asset_id",
+    "source_module_id",
+    "source_cleanup_state",
+    "result"
+  ],
+  "properties": {
+    "verifier_module_id": { "type": "string", "minLength": 1 },
+    "verifier_version": { "type": "string" },
+    "verifier_identity_note": { "type": "string" },
+    "verified_event_id": { "type": "string", "format": "uuid" },
+    "exercise_id": { "type": "string", "minLength": 1 },
+    "operation_id": { "type": "string", "minLength": 1 },
+    "participant_id": { "type": "string", "minLength": 1 },
+    "asset_id": { "type": "string", "minLength": 1 },
+    "source_module_id": { "type": "string", "minLength": 1 },
+    "source_module_version": { "type": "string" },
+    "source_cleanup_state": {
+      "type": "string",
+      "enum": ["cleanup_pending", "cleanup_failed"]
+    },
+    "verified_at_utc": { "type": "string", "format": "date-time" },
+    "event_type": { "type": "string" },
+    "result": {
+      "type": "string",
+      "enum": ["cleanup_verified", "cleanup_failed"]
+    },
+    "observations": { "type": "object" }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nsokryptonite.local/schemas/qualification-decision.schema.json",
+  "title": "NK Qualification Decision",
+  "description": "Emitted by the qualification engine. The only component that produces this record. decision=READY is only valid when reasons is empty.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["decision", "reasons", "evaluated_at_utc"],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": ["READY", "BLOCKED", "REJECTED"]
+    },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "detail": { "type": "array", "items": { "type": "string" } },
+    "module_event_id": { "type": ["string", "null"] },
+    "verifier_event_id": { "type": ["string", "null"] },
+    "asset_id": { "type": ["string", "null"] },
+    "participant_id": { "type": ["string", "null"] },
+    "module_id": { "type": ["string", "null"] },
+    "evaluated_at_utc": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "decision": { "const": "READY" } } },
+      "then": { "properties": { "reasons": { "maxItems": 0 } } }
+    }
+  ]
+}

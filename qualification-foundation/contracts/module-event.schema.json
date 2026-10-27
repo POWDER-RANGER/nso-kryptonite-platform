@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nsokryptonite.local/schemas/module-event.schema.json",
+  "title": "NK Module Execution Event",
+  "description": "Emitted by a payload module. Records what the module ATTEMPTED and the state it reached. A module event must never assert its own cleanup verification; the engine rejects any event containing a self-certification field.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "event_id",
+    "exercise_id",
+    "operation_id",
+    "participant_id",
+    "asset_id",
+    "module_id",
+    "module_version",
+    "cleanup_state"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "exercise_id": { "type": "string", "minLength": 1 },
+    "operation_id": { "type": "string", "minLength": 1 },
+    "participant_id": { "type": "string", "minLength": 1 },
+    "asset_id": { "type": "string", "minLength": 1 },
+    "authorization_id": { "type": "string", "minLength": 1 },
+    "module_id": { "type": "string", "minLength": 1 },
+    "module_version": { "type": "string", "minLength": 1 },
+    "event_type": { "type": "string" },
+    "started_at_utc": { "type": "string", "format": "date-time" },
+    "completed_at_utc": { "type": "string", "format": "date-time" },
+    "result": {
+      "type": "string",
+      "enum": ["completed", "failed", "cancelled"]
+    },
+    "cleanup_state": {
+      "type": "string",
+      "description": "A module may only ever report cleanup_pending or cleanup_failed. cleanup_verified is NOT a value a module is allowed to emit; only the independent verifier produces that outcome.",
+      "enum": ["cleanup_pending", "cleanup_failed"]
+    },
+    "declared_workspace_root": { "type": ["string", "null"] },
+    "declared_artifact_path": { "type": ["string", "null"] },
+    "declared_temp_directory": { "type": ["string", "null"] },
+    "observations": { "type": "object" },
+    "error": { "type": ["string", "null"] }
+  },
+  "not": {
+    "anyOf": [
+      { "required": ["independent_verification"] },
+      { "required": ["independent_cleanup_verification"] },
+      { "required": ["cleanup_verified"] },
+      { "required": ["verified"] }
+    ]
+  }
+}
